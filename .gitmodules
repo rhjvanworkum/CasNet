@@ -1,0 +1,3 @@
+[submodule "pyscf"]
+	path = pyscf
+	url = https://github.com/rhjvanworkum/pyscf.git
