@@ -1,4 +1,4 @@
-# custom
+# CaSchNet
 /data_storage
 .data_storage
 /results
@@ -7,6 +7,10 @@
 .checkpoints
 /wandb
 .wandb
+/schnetpack
+.schnetpack
+/test
+.test
 splitting.lock
 tmp*
 

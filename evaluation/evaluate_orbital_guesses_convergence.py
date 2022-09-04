@@ -17,7 +17,8 @@ initial_guess_dict = {
 }
 
 def run_casscf_calculation(geometry_file: str,
-                           guess_orbitals: np.ndarray):
+                           guess_orbitals: np.ndarray,
+                           basis='sto-6g'):
   molecule = gto.M(atom=geometry_file,
                    basis=basis,
                    spin=0,
@@ -42,7 +43,7 @@ def evaluate_and_print_initial_guess_convergence(geometry_files: List[str],
   micro_iterations = []
   inner_iterations = []
   for idx, geometry_file in enumerate(geometry_files):
-    mo_e, mo = method(model_path, geometry_file, basis)
+    _, mo = method(model_path, geometry_file, basis)
     imacro, imicro, iinner = run_casscf_calculation(geometry_file, mo)
     print(f'{key} at calc {idx}: {imacro} - {imicro} - {iinner}')
     macro_iterations.append(imacro)

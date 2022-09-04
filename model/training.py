@@ -4,7 +4,7 @@ import pytorch_lightning
 from pytorch_lightning.loggers import WandbLogger
 import torch
 import schnetpack as schnetpack
-from schnetpack.data.datamodule import AtomsDataModule
+# from schnetpack.data.datamodule import AtomsDataModule
 import os
 
 from model.loss_functions import mean_squared_error, symm_matrix_mse
@@ -21,6 +21,7 @@ def train_model(
     database_path: str = None,
     split_file: str = None,
     use_wandb: bool = False,
+    create_model_fn = create_orbital_model,
     initial_model_path: str = None,
     cutoff: float = 5.0
   ):
@@ -28,7 +29,7 @@ def train_model(
   os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
   """ Initializing a dataset """
-  dataset = AtomsDataModule(
+  dataset = schnetpack.data.datamodule.AtomsDataModule(
     datapath=database_path,
     batch_size=batch_size,
     split_file=split_file,
@@ -43,7 +44,7 @@ def train_model(
   )
 
   """ Initiating the Model """
-  model = create_orbital_model(loss_function=loss_fn, lr=lr, output_property_key=property, basis_set_size=basis_set_size, cutoff=cutoff)
+  model = create_model_fn(loss_function=loss_fn, lr=lr, output_property_key=property, basis_set_size=basis_set_size, cutoff=cutoff)
 
   if initial_model_path is not None:
     state_dict = torch.load(initial_model_path).state_dict()
@@ -64,15 +65,16 @@ def train_model(
   # callbacks for PyTroch Lightning Trainer
   logging.info("Setup trainer")
   callbacks = [
-      schnetpack.train.ModelCheckpoint(
-          monitor="val_loss",
-          mode="min",
-          save_top_k=1,
-          save_last=True,
-          dirpath="checkpoints",
-          filename="{epoch:02d}",
-          inference_path=save_path
-      ),
+      # schnetpack.train.ModelCheckpoint(
+      #     monitor="val_loss",
+      #     mode="min",
+      #     save_top_k=1,
+      #     save_last=True,
+      #     dirpath="checkpoints",
+      #     filename="{epoch:02d}",
+      #     # inference_path=save_path,
+      #     model_path=save_path
+      # ),
       pytorch_lightning.callbacks.LearningRateMonitor(logging_interval="epoch"),
   ]
 

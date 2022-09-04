@@ -2,7 +2,6 @@ from typing import Tuple
 import numpy as np
 import torch
 import schnetpack as spk
-import schnetpack.transform as trn
 from ase import io
 import scipy
 import scipy.linalg
@@ -27,7 +26,7 @@ def infer_orbitals_from_F_model(model_path: str,
 
   # transform geometry into input batch
   atoms = io.read(geometry_path)
-  converter = spk.interfaces.AtomsConverter(neighbor_list=trn.ASENeighborList(cutoff=cutoff), dtype=torch.float32, device=device)
+  converter = spk.interfaces.AtomsConverter(neighbor_list=spk.transform.ASENeighborList(cutoff=cutoff), dtype=torch.float32, device=device)
   input = converter(atoms)
   
   # load model
@@ -59,7 +58,7 @@ def infer_orbitals_from_mo_model(model_path: str,
 
   # transform geometry into input batch
   atoms = io.read(geometry_path)
-  converter = spk.interfaces.AtomsConverter(neighbor_list=trn.ASENeighborList(cutoff=cutoff), dtype=torch.float32, device=device)
+  converter = spk.interfaces.AtomsConverter(neighbor_list=spk.transform.ASENeighborList(cutoff=cutoff), dtype=torch.float32, device=device)
   input = converter(atoms)
   
   # load model

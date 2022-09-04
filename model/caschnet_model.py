@@ -1,7 +1,7 @@
 from typing import Callable
 import torch
 import schnetpack as spk
-from model.model_output import ModelOutput
+from model.architecture.model_output import ModelOutput
 
 def create_orbital_model(loss_function: Callable,
                          lr: float = 5e-4,

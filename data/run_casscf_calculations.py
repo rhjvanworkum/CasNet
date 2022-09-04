@@ -41,28 +41,6 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
     imacro=imacro
   )
 
-def run_casscf_calculations_parallel(geometry_folder: str, 
-                                     output_folder: str,
-                                     basis: str) -> None:
-  check_and_create_folder(geometry_folder)
-  check_and_create_folder(output_folder)
-
-  def job(file, output_folder, basis) -> None:
-    calculation_name = file.split('.')[0]
-    calculation_result = run_fulvene_casscf_calculation(file, basis)
-    calculation_result.store_as_npz(output_folder + calculation_name + '.npz')
-    return None
-
-  files = find_all_geometry_files_in_folder(geometry_folder)
-  parallel_args = [(file, output_folder, basis) for file in files]
-
-  pool = multiprocessing.Pool(N_JOBS)
-  for result in tqdm(pool.imap(job, parallel_args), total=len(parallel_args)):
-    pass
-
-  print('Done')
-                      
-
 def run_casscf_calculations(geometry_folder: str, 
                             output_folder: str,
                             basis: str) -> None:
@@ -79,19 +57,12 @@ def run_casscf_calculations(geometry_folder: str,
   print('Done')
 
 if __name__ == "__main__":
-  N_JOBS = 4
   base_dir = os.environ['base_dir']
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--geometry_folder', type=str)
   parser.add_argument('--output_folder', type=str)
   parser.add_argument('--basis', type=str)
-  parser.add_argument('--parallel', action='store_true')
-  parser.add_argument('--no-parallel', dest='parallel', action='store_false')
-  parser.set_defaults(parallel=True)
   args = parser.parse_args()
 
-  if args.parallel:
-    run_casscf_calculations_parallel(base_dir + args.geometry_folder, base_dir + args.output_folder, args.basis)
-  else:
-    run_casscf_calculations(base_dir + args.geometry_folder, base_dir + args.output_folder, args.basis)
+  run_casscf_calculations(base_dir + args.geometry_folder, base_dir + args.output_folder, args.basis)

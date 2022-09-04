@@ -2,6 +2,7 @@
 Script for training NN on CAS orbitals
 """
 import argparse
+from model.caschnet_model import create_orbital_model
 
 from model.loss_functions import mean_squared_error, symm_matrix_mse
 from model.training import train_model
@@ -13,7 +14,7 @@ if __name__ == "__main__":
   batch_size = 16
   cutoff = 5.0
   basis_set_size = 36
-  use_wandb = True
+  use_wandb = False
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--db_name', type=str)
@@ -25,6 +26,7 @@ if __name__ == "__main__":
   database_path = './data_storage/' + args.db_name
   split_file = './data_storage/' + args.split_name
   model_name = args.model_name
+  create_model_fn = create_orbital_model
 
   property = args.property
   if property == 'mo_coeffs' or property == 'mo_coeffs_adjusted':
@@ -40,6 +42,7 @@ if __name__ == "__main__":
                   epochs=epochs,
                   basis_set_size=basis_set_size,
                   database_path=database_path,
+                  create_model_fn=create_model_fn,
                   split_file=split_file,
                   use_wandb=use_wandb,
                   cutoff=cutoff) 

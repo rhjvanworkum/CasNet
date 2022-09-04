@@ -1,8 +1,6 @@
 # caschnet
-
-- submodule pyscf
-
 make changes to pyscf & re-compile
+(orbitalMixer: https://acdc.alcf.anl.gov/mdf/detail/orbital_mixer_v1.1/)
 
 ### 1. Installation & Setup
 
@@ -29,9 +27,5 @@ make changes to pyscf & re-compile
 `python evaluation/write_orbital_guesses_to_molden.py  --geometry_path geometries/geom_scan_200/geometry_10.xyz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g `
 
 ##### 3.3 Evaluate orbital convergence on validation/test set
-`python evaluation/evaluate_orbital_guesses_convergence.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`
-
-
-
-### problems with SchNetPack
--> xyz_to_extxyz, reading in n_atoms
+- `python evaluation/evaluate_orbital_guesses_convergence.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`
+- `python evaluation/evaluate_orbital_guesses_energies.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`

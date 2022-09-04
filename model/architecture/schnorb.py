@@ -1,20 +1,86 @@
+"""
+This code is taken from the SchNorb Github repository at : 
+
+"""
+
 import math
 import numpy as np
 import torch
 import torch.nn as nn
 import schnetpack as spk
-from schnorb import SchNOrbProperties
+from schnetpack import properties
 
-class SchNOrbProperties(Properties):
-    ham_prop = 'hamiltonian'
-    hamorth_prop = 'hamiltonian_orth'
-    ov_trans_prop = 'ov_transform'
-    ov_prop = 'overlap'
-    en_prop = 'energy'
-    f_prop = 'forces'
-    psi_prop = 'psi'
-    eps_prop = 'eps'
+# class SchNOrbProperties(Properties):
+#     ham_prop = 'hamiltonian'
+#     hamorth_prop = 'hamiltonian_orth'
+#     ov_trans_prop = 'ov_transform'
+#     ov_prop = 'overlap'
+#     en_prop = 'energy'
+#     f_prop = 'forces'
+#     psi_prop = 'psi'
+#     eps_prop = 'eps'
 
+class Aggregate(nn.Module):
+    """Pooling layer based on sum or average with optional masking.
+    Args:
+        axis (int): axis along which pooling is done.
+        mean (bool, optional): if True, use average instead for sum pooling.
+        keepdim (bool, optional): whether the output tensor has dim retained or not.
+    """
+
+    def __init__(self, axis, mean=False, keepdim=True):
+        super(Aggregate, self).__init__()
+        self.average = mean
+        self.axis = axis
+        self.keepdim = keepdim
+
+    def forward(self, input, mask=None):
+        r"""Compute layer output.
+        Args:
+            input (torch.Tensor): input data.
+            mask (torch.Tensor, optional): mask to be applied; e.g. neighbors mask.
+        Returns:
+            torch.Tensor: layer output.
+        """
+        # mask input
+        if mask is not None:
+            input = input * mask[..., None]
+        # compute sum of input along axis
+        y = torch.sum(input, self.axis)
+        # compute average of input along axis
+        if self.average:
+            # get the number of items along axis
+            if mask is not None:
+                N = torch.sum(mask, self.axis, keepdim=self.keepdim)
+                N = torch.max(N, other=torch.ones_like(N))
+            else:
+                N = input.size(self.axis)
+            y = y / N
+        return y
+
+class ScaleShift(nn.Module):
+    r"""Scale and shift layer for standardization.
+    .. math::
+       y = x \times \sigma + \mu
+    Args:
+        mean (torch.Tensor): mean value :math:`\mu`.
+        stddev (torch.Tensor): standard deviation value :math:`\sigma`.
+    """
+
+    def __init__(self, mean, stddev):
+        super(ScaleShift, self).__init__()
+        self.register_buffer("mean", mean)
+        self.register_buffer("stddev", stddev)
+
+    def forward(self, input):
+        """Compute layer output.
+        Args:
+            input (torch.Tensor): input data.
+        Returns:
+            torch.Tensor: layer output.
+        """
+        y = input * self.stddev + self.mean
+        return y
 
 class SingleAtomHamiltonian(nn.Module):
 
@@ -87,19 +153,19 @@ class Hamiltonian(nn.Module):
                 torch.ones(max_z, self.n_orbs)
             ).reshape(max_z, self.n_orbs ** 2)
             self.ov_onsitenet.weight.data.zero_()
-        self.pairagg = spk.nn.Aggregate(axis=2, mean=True)
+        self.pairagg = Aggregate(axis=2, mean=True)
 
         self.atom_net = nn.Sequential(
             spk.nn.Dense(n_cosine_basis, n_cosine_basis // 2,
                          activation=spk.nn.activations.shifted_softplus),
             spk.nn.Dense(n_cosine_basis // 2, 1),
-            spk.nn.base.ScaleShift(mean, stddev)
+            ScaleShift(mean, stddev)
         )
-        self.atomagg = spk.nn.Aggregate(axis=1, mean=False)
+        self.atomagg = Aggregate(axis=1, mean=False)
 
     def forward(self, inputs):
         Z = inputs['_atomic_numbers']
-        nbh = inputs[SchNOrbProperties.neighbors]
+        nbh = inputs['_idx_j']
         # nbhmask = inputs[Properties.neighbor_mask]
         x0, x, Vijkl = inputs['representation']
 
@@ -193,7 +259,7 @@ class Hamiltonian(nn.Module):
         E = self.atomagg(Ei)
 
         if self.derivative is not None:
-            F = -torch.autograd.grad(E, inputs[SchNOrbProperties.R],
+            F = -torch.autograd.grad(E, inputs['position'],
                                      grad_outputs=torch.ones_like(E),
                                      create_graph=self.create_graph)[0]
         else:

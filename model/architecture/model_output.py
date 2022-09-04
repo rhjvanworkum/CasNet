@@ -36,6 +36,7 @@ class ModelOutput(nn.Module):
         self.loss_weight = loss_weight
         self.basis_set_size = basis_set_size
         self.metrics = nn.ModuleDict(metrics)
+        self.constraints = []
 
     def calculate_loss(self, pred, target):
         if self.loss_weight == 0 or self.loss_fn is None:
