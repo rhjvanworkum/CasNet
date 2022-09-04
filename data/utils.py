@@ -1,3 +1,4 @@
+from operator import itemgetter
 from typing import List
 import numpy as np
 import os
@@ -69,3 +70,45 @@ def find_all_files_in_output_folder(output_folder: str) -> List[CasscfResult]:
 def check_and_create_folder(folder):
   if not os.path.exists(folder):
     os.makedirs(folder)
+
+class Atom:
+  def __init__(self, type, x, y, z) -> None:
+    self.type = type
+    self.x = x
+    self.y = y
+    self.z = z
+  
+  @property
+  def coordinates(self):
+    return np.array([self.x, self.y, self.z])
+
+def write_xyz_file(atoms: List[Atom], filename: str):
+  with open(filename, 'w') as f:
+    f.write(str(len(atoms)) + ' \n')
+    f.write('\n')
+
+    for atom in atoms:
+      f.write(atom.type)
+      for coord in ['x', 'y', 'z']:
+        if getattr(atom, coord) < 0:
+          f.write('         ')
+        else:
+          f.write('          ')
+        f.write("%.5f" % getattr(atom, coord))
+      f.write('\n')
+    
+    f.write('\n')
+
+def read_xyz_file(filename):
+  atoms = []
+
+  with open(filename) as f:
+    n_atoms = int(f.readline())
+    _ = f.readline()
+
+    for i in range(n_atoms):
+      data = f.readline().replace('\n', '').split(' ')
+      data = list(filter(lambda a: a != '', data))
+      atoms.append(Atom(data[0], float(data[1]), float(data[2]), float(data[3])))
+
+  return atoms
