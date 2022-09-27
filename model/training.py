@@ -65,18 +65,29 @@ def train_model(
   # callbacks for PyTroch Lightning Trainer
   logging.info("Setup trainer")
   callbacks = [
-      # schnetpack.train.ModelCheckpoint(
-      #     monitor="val_loss",
-      #     mode="min",
-      #     save_top_k=1,
-      #     save_last=True,
-      #     dirpath="checkpoints",
-      #     filename="{epoch:02d}",
-      #     # inference_path=save_path,
-      #     model_path=save_path
-      # ),
-      pytorch_lightning.callbacks.LearningRateMonitor(logging_interval="epoch"),
+      schnetpack.train.ModelCheckpoint(
+          monitor="val_loss",
+          mode="min",
+          save_top_k=1,
+          save_last=True,
+          dirpath="checkpoints",
+          filename="{epoch:02d}",
+          # inference_path=save_path,
+          model_path=save_path
+      ),
+      pytorch_lightning.callbacks.LearningRateMonitor(
+        logging_interval="epoch"
+      ),
+      pytorch_lightning.callbacks.EarlyStopping(
+        monitor="val_loss", 
+        min_delta=0.0001, 
+        patience=25, 
+        verbose=False, 
+        mode="min"
+      )
   ]
+  
+  epochs = 1000
 
   if use_wandb:
     # wandb_project = os.environ['WANDB_PROJECT']
