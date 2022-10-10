@@ -9,6 +9,8 @@
 .schnetpack
 /test
 .test
+/data_storage
+.data_storage
 splitting.lock
 tmp*
 

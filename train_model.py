@@ -10,7 +10,7 @@ from model.training import train_model
 
 if __name__ == "__main__":
   epochs = 100
-  lr = 5e-4
+  lr = 1e-3
   batch_size = 16
   cutoff = 5.0
   basis_set_size = 36
