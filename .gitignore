@@ -141,3 +141,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+data_storage/normal_dist_10k_s0.1_energies.db
+data_storage/normal_dist_10k_s0.1_sorted.db
+data_storage/normal_dist_10k_s0.1.db

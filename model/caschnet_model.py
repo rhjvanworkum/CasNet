@@ -1,7 +1,7 @@
 from typing import Callable
 import torch
 import schnetpack as spk
-from model.architecture.model_output import ModelOutput
+from model.architecture.model_output import ModelOutput, Hamiltonian
 
 def create_orbital_model(loss_function: Callable,
                          lr: float = 5e-4,
@@ -16,7 +16,7 @@ def create_orbital_model(loss_function: Callable,
         radial_basis=spk.nn.GaussianRBF(n_rbf=20, cutoff=cutoff),
         cutoff_fn=spk.nn.CosineCutoff(cutoff)
     )
-    pred_module = spk.atomistic.Atomwise(
+    pred_module = Hamiltonian(
         output_key=output_property_key,
         n_in=representation.n_atom_basis,
         n_layers=2,
