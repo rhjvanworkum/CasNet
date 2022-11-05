@@ -29,7 +29,7 @@ if __name__ == "__main__":
   create_model_fn = create_orbital_model
 
   property = args.property
-  if property == 'mo_coeffs' or property == 'mo_coeffs_adjusted':
+  if property == 'mo_coeffs' or property == 'mo_coeffs_adjusted' or property == 'dm':
     loss_fn = mean_squared_error
   elif property == 'F':
     loss_fn = symm_matrix_mse

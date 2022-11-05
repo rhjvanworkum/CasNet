@@ -1,5 +1,5 @@
 # include python path
-PYTHONPATH="/mnt/c/users/rhjva/imperial/caschnet/:/mnt/c/users/rhjva/imperial/caschnet/schnetpack/src/:$PYTHONPATH"
+PYTHONPATH="/mnt/c/users/rhjva/imperial/caschnet/:/mnt/c/users/rhjva/imperial/caschnet/schnetpack/src/:/mnt/c/users/rhjva/imperial/caschnet/pyscf/:$PYTHONPATH"
 export PYTHONPATH
 
 # set files base dir

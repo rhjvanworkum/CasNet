@@ -17,6 +17,9 @@ def write_db_entry_to_molden_file(molden_file,
                     spin=0,
                     symmetry=True)
 
+
+    # print(molecule.ao_labels())
+
     with open(molden_file, 'w') as f:
         molden.header(molecule, f)
         molden.orbital_coeff(molecule, f, mo_coeffs, ene=np.zeros(mo_coeffs.shape[0]))
@@ -28,19 +31,19 @@ def write_db_entry_to_molden_file(molden_file,
 # np.save('e_tots', np.array(e_tots))
 
 
-e_tots = np.load('e_tots.npy')
+# e_tots = np.load('e_tots.npy')
 
-lower = np.mean(e_tots) -  1 * np.std(e_tots)
-upper = np.mean(e_tots) +  1 * np.std(e_tots)
+# lower = np.mean(e_tots) -  1 * np.std(e_tots)
+# upper = np.mean(e_tots) +  1 * np.std(e_tots)
 
-outliers = []
-for idx, e in enumerate(e_tots):
-  if e < lower or e > upper:
-    outliers.append(idx)
+# outliers = []
+# for idx, e in enumerate(e_tots):
+#   if e < lower or e > upper:
+#     outliers.append(idx)
 
-with connect('normal_dist_10k_s0.1.db') as conn:
+with connect('./data_storage/geom_scan_200_hf.db') as conn:
   # get the first calculation
-  row_1 = conn.get(int(outliers[4] + 1))
+  row_1 = conn.get(2)
 
   # get mo coeffs and reshape corresponding array
   # columns correspond to mo_1, mo_2, mo_3, etc.
@@ -51,7 +54,6 @@ with connect('normal_dist_10k_s0.1.db') as conn:
                                 row_1['numbers'],
                                 row_1['positions'],
                                 mo_coeffs)
-
 
 
 

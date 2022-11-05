@@ -19,15 +19,15 @@ def plot_msd_bin_plot(equilibrium_geometry, geometries):
 
 if __name__ == "__main__":
   base_dir = os.environ['base_dir']
-
-  sigma = 1
+  
+  sigma = 0.1
   n = 200
-  folder = base_dir + 'geometries/normal_dist_s1_200/'
+  folder = base_dir + 'geometries/ethene_s01/'
+  equilibrium_geometry = read_xyz_file('/mnt/c/users/rhjva/Downloads/ethene.xyz')
   
   if not os.path.exists(folder):
     os.makedirs(folder)
 
-  equilibrium_geometry = read_xyz_file('./data_storage/gs_fulvene_equilibrium.xyz')
   n_atoms = len(equilibrium_geometry)
   coords = ['x', 'y', 'z']
   geometries = []

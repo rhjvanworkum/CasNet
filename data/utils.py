@@ -8,6 +8,7 @@ class CasscfResult:
   Base class to store PySCF CASSCF calculation outputs
   """
   def __init__(self, 
+               converged: bool,
                basis: str,
                e_tot: float,
                mo_energies: np.ndarray, 
@@ -15,20 +16,24 @@ class CasscfResult:
                S: np.ndarray, 
                F: np.ndarray, 
                imacro: int,
+               dm: np.ndarray = None,
                index: int = None) -> None:
+    self.converged = converged
     self.basis = basis
     self.e_tot = e_tot
     self.mo_energies = mo_energies
     self.mo_coeffs = mo_coeffs
     self.S = S
     self.F = F
+    self.dm = dm
     self.imacro = imacro
 
     self.index = index
     self.mo_coeffs_adjusted = None
+    self.F_adjusted = None
 
   def store_as_npz(self, file: str):
-    np.savez(file, basis=self.basis, e_tot=self.e_tot, mo_energies=self.mo_energies, mo_coeffs=self.mo_coeffs, S=self.S, F=self.F, imacro=self.imacro)
+    np.savez(file, converged=self.converged, dm=self.dm, basis=self.basis, e_tot=self.e_tot, mo_energies=self.mo_energies, mo_coeffs=self.mo_coeffs, S=self.S, F=self.F, imacro=self.imacro)
 
   @classmethod
   def load_from_npz(cls, file: str):
@@ -37,9 +42,11 @@ class CasscfResult:
     except:
       index = None
     
-    data = np.load(file)
-    return cls(data['basis'], data['e_tot'], data['mo_energies'], data['mo_coeffs'],
-               data['S'], data['F'], data['imacro'], index)
+    data = np.load(file, allow_pickle=True)
+    return cls(data['converged'], data['basis'], data['e_tot'], 
+               data['mo_energies'], data['mo_coeffs'],
+               data['S'], data['F'], data['imacro'],  data['dm'],
+               index)
 
 
 def find_all_geometry_files_in_folder(geometry_folder: str) -> List[str]:

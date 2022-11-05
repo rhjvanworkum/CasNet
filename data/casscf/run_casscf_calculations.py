@@ -1,16 +1,18 @@
 
 import multiprocessing
 import os
-from typing import List
+from typing import List, Optional
 import argparse
 import numpy as np
 from pyscf import gto, mcscf
 from tqdm import tqdm
+from functools import reduce
 
-from utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder
+from data.utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder
 
 def run_fulvene_casscf_calculation(geometry_xyz_file_path: str, 
-                                   basis: str = 'sto_6g') -> CasscfResult:
+                                   basis: str = 'sto_6g',
+                                   guess_mos: Optional[np.ndarray] = None):
   molecule = gto.M(atom=geometry_xyz_file_path,
                    basis=basis,
                    spin=0,
@@ -25,21 +27,34 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
   casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
   casscf.conv_tol = 1e-8
 
-  mo = mcscf.project_init_guess(casscf, hartree_fock.mo_coeff)
+  if not guess_mos is None:
+    mo = mcscf.project_init_guess(casscf, guess_mos)
+  else: 
+    mo = mcscf.project_init_guess(casscf, hartree_fock.mo_coeff)
   mo = casscf.sort_mo([19, 20, 21, 22, 23, 24], mo)
 
-  e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeffs, mo_energies = casscf.kernel(mo)
+  conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeffs, mo_energies = casscf.kernel(mo)
   F = casscf.get_fock()
 
+  casdm1 = casscf.fcisolver.make_rdm1(casscf.ci, casscf.ncas, casscf.nelecas)
+  mo_coeff = casscf.mo_coeff
+  ncore = casscf.ncore
+  nocc = casscf.ncore + casscf.ncas
+  dm_core = np.dot(mo_coeff[:,:ncore]*2, mo_coeff[:,:ncore].conj().T)
+  mocas = mo_coeff[:,ncore:nocc]
+  dm = dm_core + reduce(np.dot, (mocas, casdm1, mocas.conj().T))
+
   return CasscfResult(
+    converged=conv,
     basis=basis,
     e_tot=e_tot,
     mo_energies=mo_energies,
     mo_coeffs=mo_coeffs,
     S=S,
     F=F,
-    imacro=imacro
-  )
+    imacro=imacro,
+    dm=dm
+  ), mo_coeffs
 
 def run_casscf_calculations(geometry_folder: str, 
                             output_folder: str,
@@ -48,10 +63,13 @@ def run_casscf_calculations(geometry_folder: str,
   check_and_create_folder(geometry_folder)
   check_and_create_folder(output_folder)
 
+  guess_mos = None
+
   files = find_all_geometry_files_in_folder(geometry_folder)              
   for file in tqdm(files, total=len(files)):
     calculation_name = file.split('/')[-1].split('.')[0]
-    calculation_result = run_fulvene_casscf_calculation(file, basis)
+    calculation_result, mo_coeffs = run_fulvene_casscf_calculation(file, basis, guess_mos)
+    guess_mos = mo_coeffs
     calculation_result.store_as_npz(output_folder + calculation_name + '.npz')
   
   print('Done')

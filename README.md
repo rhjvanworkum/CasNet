@@ -4,6 +4,8 @@ make changes to pyscf & re-compile
 
 ### 1. Installation & Setup
 
+!! note pyscf in this folder is not used, one in site-packages is used
+
 <br>
 <br>
 

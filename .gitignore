@@ -5,6 +5,16 @@
 .checkpoints
 /wandb
 .wandb
+/orbitals
+.orbitals
+/f_matrices
+.f_matrices
+/f_matrices_2
+.f_matrices_2
+/f_matrices*
+/f_matrices*
+/mo_energies
+.mo_energies
 /schnetpack
 .schnetpack
 /test
@@ -13,6 +23,11 @@
 .data_storage
 splitting.lock
 tmp*
+
+*.db
+*.molden
+*.png
+*.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
