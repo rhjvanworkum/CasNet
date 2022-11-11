@@ -8,7 +8,7 @@ export PYSCF_EXT_PATH
 export base_dir='/home/ruard/Documents/experiments/fulvene/'
 
 # set WANDB project for training logs
-export WANDB_PROJECT='caschnet_pyscf'
+export WANDB_PROJECT='caschnet'
 
 # set PySCF OMP threads for parallelization
 export OMP_NUM_THREADS=1
