@@ -3,6 +3,8 @@ make changes to pyscf & re-compile
 (orbitalMixer: https://acdc.alcf.anl.gov/mdf/detail/orbital_mixer_v1.1/)
 
 ### 1. Installation & Setup
+build pyscf from scratch:
+- sudo apt-get install libblas-dev liblapack-dev
 
 !! note pyscf in this folder is not used, one in site-packages is used
 

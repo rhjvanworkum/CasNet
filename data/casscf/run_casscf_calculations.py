@@ -8,7 +8,7 @@ from pyscf import gto, mcscf
 from tqdm import tqdm
 from functools import reduce
 
-from data.utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder
+from data.utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_idx, sort_geometry_files_by_distance
 
 def run_fulvene_casscf_calculation(geometry_xyz_file_path: str, 
                                    basis: str = 'sto_6g',
@@ -22,11 +22,10 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
   hartree_fock.kernel()
   S = hartree_fock.get_ovlp(molecule)
 
-  n_states = 2
+  n_states = 3
   weights = np.ones(n_states) / n_states
   casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
-  casscf.conv_tol = 1e-8
-
+  
   if not guess_mos is None:
     mo = mcscf.project_init_guess(casscf, guess_mos)
   else: 
@@ -34,7 +33,10 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
   mo = casscf.sort_mo([19, 20, 21, 22, 23, 24], mo)
 
   conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeffs, mo_energies = casscf.kernel(mo)
+
   F = casscf.get_fock()
+
+  h_core = casscf.get_hcore()
 
   casdm1 = casscf.fcisolver.make_rdm1(casscf.ci, casscf.ncas, casscf.nelecas)
   mo_coeff = casscf.mo_coeff
@@ -52,6 +54,7 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
     mo_coeffs=mo_coeffs,
     S=S,
     F=F,
+    h_core=h_core,
     imacro=imacro,
     dm=dm
   ), mo_coeffs
@@ -65,7 +68,12 @@ def run_casscf_calculations(geometry_folder: str,
 
   guess_mos = None
 
-  files = find_all_geometry_files_in_folder(geometry_folder)              
+  files = find_all_geometry_files_in_folder(geometry_folder)    
+
+  # files = sort_geometry_files_by_idx(files)
+  files = sort_geometry_files_by_distance(files, '/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_0.xyz')   
+  print(len(files))  
+      
   for file in tqdm(files, total=len(files)):
     calculation_name = file.split('/')[-1].split('.')[0]
     calculation_result, mo_coeffs = run_fulvene_casscf_calculation(file, basis, guess_mos)

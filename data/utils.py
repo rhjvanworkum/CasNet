@@ -15,6 +15,7 @@ class CasscfResult:
                mo_coeffs: np.ndarray, 
                S: np.ndarray, 
                F: np.ndarray, 
+               h_core,
                imacro: int,
                dm: np.ndarray = None,
                index: int = None) -> None:
@@ -25,6 +26,7 @@ class CasscfResult:
     self.mo_coeffs = mo_coeffs
     self.S = S
     self.F = F
+    self.h_core = h_core
     self.dm = dm
     self.imacro = imacro
 
@@ -33,7 +35,7 @@ class CasscfResult:
     self.F_adjusted = None
 
   def store_as_npz(self, file: str):
-    np.savez(file, converged=self.converged, dm=self.dm, basis=self.basis, e_tot=self.e_tot, mo_energies=self.mo_energies, mo_coeffs=self.mo_coeffs, S=self.S, F=self.F, imacro=self.imacro)
+    np.savez(file, converged=self.converged, dm=self.dm, basis=self.basis, e_tot=self.e_tot, mo_energies=self.mo_energies, mo_coeffs=self.mo_coeffs, S=self.S, F=self.F, h_core=self.h_core, imacro=self.imacro)
 
   @classmethod
   def load_from_npz(cls, file: str):
@@ -45,7 +47,7 @@ class CasscfResult:
     data = np.load(file, allow_pickle=True)
     return cls(data['converged'], data['basis'], data['e_tot'], 
                data['mo_energies'], data['mo_coeffs'],
-               data['S'], data['F'], data['imacro'],  data['dm'],
+               data['S'], data['F'], data['h_core'], data['imacro'],  data['dm'],
                index)
 
 
@@ -58,13 +60,37 @@ def find_all_geometry_files_in_folder(geometry_folder: str) -> List[str]:
   return geometry_files
 
 
-def sort_geometry_files(geometry_files: List[str]) -> List[str]:
+def sort_geometry_files_by_idx(geometry_files: List[str]) -> List[str]:
   files_with_idx = []
   for file in geometry_files:
     files_with_idx.append((int(file.split('/')[-1].split('.')[0].split('_')[-1]), file))
   sorted_files_with_idx = list(sorted(files_with_idx, key=lambda x: x[0]))
   return [file for _, file in sorted_files_with_idx]
 
+def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_file: str) -> List[str]:
+  start_geometry = read_xyz_file(start_geometry_file)
+  geometries = [read_xyz_file(file) for file in geometry_files]
+  selected_idxs = []
+  sorted_geometry_files = []
+
+  current_geometry = start_geometry
+  for iteration in range(len(geometry_files)):
+    distances = []
+    idxs = []
+
+    for idx, geometry in enumerate(geometries):
+      if idx not in selected_idxs:
+        distances.append(np.sum([np.linalg.norm(atom2.coordinates - atom1.coordinates) for atom1, atom2 in zip(geometry, current_geometry)]))
+        idxs.append(idx)
+
+    top_idx = np.argmin(distances)
+    selected_idx = idxs[top_idx]
+
+    selected_idxs.append(selected_idx)
+    current_geometry = geometries[selected_idx] 
+    sorted_geometry_files.append(geometry_files[selected_idx])
+
+  return sorted_geometry_files
 
 def find_all_files_in_output_folder(output_folder: str) -> List[CasscfResult]:
   file_list = []

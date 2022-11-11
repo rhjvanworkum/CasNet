@@ -9,10 +9,16 @@
 .orbitals
 /f_matrices
 .f_matrices
+/dm_matrices
+.dm_matrices
+/mo_matrices
+.mo_matrices
 /f_matrices_2
 .f_matrices_2
 /f_matrices*
 /f_matrices*
+.hcore_matrices
+/hcore_matrices
 /mo_energies
 .mo_energies
 /schnetpack

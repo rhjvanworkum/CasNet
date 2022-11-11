@@ -2,8 +2,8 @@ from itertools import permutations, combinations
 from typing import Any
 from ase.db import connect
 from base64 import b64decode
+from data.utils import find_all_files_in_output_folder
 import numpy as np
-from data.save_casscf_calculations_to_db import get_orbital_order, sort_fock_matrix
 from pyscf import gto
 import matplotlib.pyplot as plt
 from pyscf.tools import molden
@@ -26,13 +26,11 @@ def write_db_entry_to_molden_file(molden_file_name: str, db_row: Any, mo_coeffs)
         molden.orbital_coeff(molecule, f, mo_coeffs, ene=np.zeros(mo_coeffs.shape[0]))
 
 """ Write tot energies to plot """
-# e = []
-# with connect('./data_storage/ethene_geom_scan_2.db') as conn:
-#   for i in range(200):
-#     e.append(conn.get(i+1).data['e_tot'])
-
-# plt.plot(np.arange(len(e)), e)
-# plt.savefig('test.png')
+casscf_results = find_all_files_in_output_folder('/home/ruard/Documents/experiments/fulvene/pyscf/fulvene_s005_200/')
+casscf_results = list(sorted(casscf_results, key=lambda x: x.index))
+e = [result.e_tot for result in casscf_results]
+plt.hist(e, bins=50)
+plt.show()
 
 """ Write orbital files """
 # with connect('./data_storage/ethene_geom_scan.db') as conn:
@@ -42,19 +40,25 @@ def write_db_entry_to_molden_file(molden_file_name: str, db_row: Any, mo_coeffs)
 #     write_db_entry_to_molden_file(f'./orbitals/{i}_file.molden', row, mo_coeffs)
 
 """ Plot F matrix entries """
-F_matrices = []
-n = 36
-with connect('./data_storage/geom_scan_200_sto_6g.db') as conn:
-  for i in range(200):
-    indices = []
-    F = conn.get(i + 1).data['mo_coeffs'].reshape(n, n).copy()
-    F_matrices.append(F)
-F_matrices = np.array(F_matrices)
-for i in range(n):
-  for j in range(n):
-    plt.plot(F_matrices[:, i, j])
-    plt.savefig(f'./f_matrices_2/fig_{i}_{j}.png')
-    plt.clf()
+# F_matrices = []
+
+# n = 36
+# with connect('./data_storage/geom_scan_200_new.db') as conn:
+#   for i in range(200):
+#     indices = []
+#     F = conn.get(i + 1).data['F'].reshape(n, n).copy()
+#     F_matrices.append(F)
+# F_matrices = np.array(F_matrices)
+
+# for i in range(36):
+#   for j in range(36):
+#     plt.hist(F_matrices[:, i, j], bins=50)
+#     plt.savefig(f'./hcore_matrices/fig_{i}_{j}.png')
+#     plt.clf()
+
+
+
+
 
 # prev_F = None
 # threshold = 5

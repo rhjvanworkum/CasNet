@@ -20,10 +20,10 @@ def plot_msd_bin_plot(equilibrium_geometry, geometries):
 if __name__ == "__main__":
   base_dir = os.environ['base_dir']
   
-  sigma = 0.1
+  sigma = 0.05
   n = 200
-  folder = base_dir + 'geometries/ethene_s01/'
-  equilibrium_geometry = read_xyz_file('/mnt/c/users/rhjva/Downloads/ethene.xyz')
+  folder = base_dir + 'geometries/fulvene_s005_200/'
+  equilibrium_geometry = read_xyz_file('/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_0.xyz')
   
   if not os.path.exists(folder):
     os.makedirs(folder)

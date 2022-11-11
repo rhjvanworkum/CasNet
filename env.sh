@@ -1,12 +1,14 @@
 # include python path
-PYTHONPATH="/mnt/c/users/rhjva/imperial/caschnet/:/mnt/c/users/rhjva/imperial/caschnet/schnetpack/src/:/mnt/c/users/rhjva/imperial/caschnet/pyscf/:$PYTHONPATH"
+PYTHONPATH="/home/ruard/code/caschnet/:/home/ruard/code/caschnet/schnetpack/src/:$PYTHONPATH"
 export PYTHONPATH
+PYSCF_EXT_PATH="/home/ruard/anaconda3/envs/caschnet/lib/python3.8/site-packages/pyscf"
+export PYSCF_EXT_PATH
 
 # set files base dir
-export base_dir='/mnt/c/users/rhjva/imperial/fulvene/'
+export base_dir='/home/ruard/Documents/experiments/fulvene/'
 
 # set WANDB project for training logs
 export WANDB_PROJECT='caschnet_pyscf'
 
 # set PySCF OMP threads for parallelization
-export OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=1
