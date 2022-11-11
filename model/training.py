@@ -80,8 +80,8 @@ def train_model(
       ),
       pytorch_lightning.callbacks.EarlyStopping(
         monitor="val_loss", 
-        min_delta=0.0001, 
-        patience=25, 
+        min_delta=0.000001, 
+        patience=50, 
         verbose=False, 
         mode="min"
       )
@@ -90,8 +90,7 @@ def train_model(
   epochs = 1000
 
   if use_wandb:
-    # wandb_project = os.environ['WANDB_PROJECT']
-    wandb_project = 'caschnet_pyscf'
+    wandb_project = os.environ['WANDB_PROJECT']
     logger = WandbLogger(project=wandb_project)
     trainer = pytorch_lightning.Trainer(callbacks=callbacks, 
                                         logger=logger,

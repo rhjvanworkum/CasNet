@@ -1,12 +1,12 @@
 # include python path
-PYTHONPATH="/mnt/c/users/rhjva/imperial/caschnet/:/mnt/c/users/rhjva/imperial/caschnet/schnetpack/src/:$PYTHONPATH"
+PYTHONPATH="/home/ubuntu/caschnet/:/home/ubuntu/caschnet/schnetpack/src/:$PYTHONPATH"
 export PYTHONPATH
 
 # set files base dir
-export base_dir='/mnt/c/users/rhjva/imperial/fulvene/'
+export base_dir='/home/ubuntu/fulvene/'
 
 # set WANDB project for training logs
-export WANDB_PROJECT='caschnet_pyscf'
+export WANDB_PROJECT='caschnet'
 
 # set PySCF OMP threads for parallelization
 export OMP_NUM_THREADS=16
