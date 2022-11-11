@@ -7,6 +7,7 @@ from typing import Callable
 import torch
 import schnetpack as spk
 from model.architecture.model_output import ModelOutput, Hamiltonian
+from model.architecture.so3_representation import SO3net
 
 def create_model(loss_function: Callable,
                          lr: float = 5e-4,
@@ -80,18 +81,18 @@ if __name__ == "__main__":
             spk.transform.CastTo32()
         ],
         property_units={'F': 1.0},
-        num_workers=8,
+        num_workers=4,
         pin_memory=True,
         load_properties=['F'],
     )
 
     pairwise_distance = spk.atomistic.PairwiseDistances()
-    representation = spk.representation.SO3net(
-        n_atom_basis=16,
-        n_interactions=2,
+    representation = SO3net(
+        n_atom_basis=12,
+        n_interactions=1,
         lmax=2,
-        radial_basis=spk.nn.GaussianRBF(n_rbf=20, cutoff=cutoff),
-        cutoff_fn=spk.nn.GaussianRBF(n_rbf=20, cutoff=cutoff),
+        radial_basis=spk.nn.GaussianRBF(n_rbf=4, cutoff=cutoff),
+        cutoff_fn=spk.nn.GaussianRBF(n_rbf=4, cutoff=cutoff),
     )
 
     dataset.setup()
