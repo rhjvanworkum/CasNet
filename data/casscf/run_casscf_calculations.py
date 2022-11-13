@@ -24,13 +24,13 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
 
   n_states = 3
   weights = np.ones(n_states) / n_states
-  casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
+  casscf = hartree_fock.CASSCF(ncas=2, nelecas=2).state_average(weights)
   
   if not guess_mos is None:
     mo = mcscf.project_init_guess(casscf, guess_mos)
   else: 
     mo = mcscf.project_init_guess(casscf, hartree_fock.mo_coeff)
-  mo = casscf.sort_mo([19, 20, 21, 22, 23, 24], mo)
+  mo = casscf.sort_mo([8, 9], mo)
 
   conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeffs, mo_energies = casscf.kernel(mo)
 
@@ -70,9 +70,9 @@ def run_casscf_calculations(geometry_folder: str,
 
   files = find_all_geometry_files_in_folder(geometry_folder)    
 
-  # files = sort_geometry_files_by_idx(files)
-  files = sort_geometry_files_by_distance(files, '/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_0.xyz')   
-  print(len(files))  
+  files = sort_geometry_files_by_idx(files)
+  # files = sort_geometry_files_by_distance(files, '/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_0.xyz')   
+  # print(len(files))  
       
   for file in tqdm(files, total=len(files)):
     calculation_name = file.split('/')[-1].split('.')[0]

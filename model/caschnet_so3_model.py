@@ -1,7 +1,7 @@
 from typing import Callable
 import torch
+from model.architecture.so3_representation import SO3net
 import schnetpack as spk
-from model.architecture.model_output import HamiltonianOutput
 from schnetpack import ModelOutput
 
 from torch.optim.lr_scheduler import _LRScheduler
@@ -25,39 +25,32 @@ class NoamLR(_LRScheduler):
         scale = self.warmup_steps ** 0.5 * min(last_epoch ** (-0.5), last_epoch * self.warmup_steps ** (-1.5))
         return [base_lr * scale for base_lr in self.base_lrs]
 
-def create_orbital_model(loss_function: Callable,
+def create_so3_orbital_model(loss_function: Callable,
                          lr: float = 5e-4,
                          output_property_key: str = 'F',
                          basis_set_size: int = 36,
                          cutoff: float = 5.0):
 
-    pairwise_distance = spk.atomistic.PairwiseDistances()
-    representation = spk.representation.PaiNN(
-        n_atom_basis=64,
-        n_interactions=5,
-        radial_basis=spk.nn.GaussianRBF(n_rbf=20, cutoff=cutoff),
-        cutoff_fn=spk.nn.CosineCutoff(cutoff)
-    )
-    pred_module = HamiltonianOutput(
-        output_key=output_property_key,
-        n_in=representation.n_atom_basis,
-        n_layers=2,
-        n_out=basis_set_size**2
-    )
-    nnp = spk.model.NeuralNetworkPotential(
-        representation=representation,
-        input_modules=[pairwise_distance],
-        output_modules=[pred_module],
+    model = SO3net(
+        n_atom_basis=12,
+        n_radial_basis=12,
+        n_interaction_layers=2,
+        use_residual_connections=True,
+        lmax=2
     )
 
+    nnp = spk.model.NeuralNetworkPotential(
+        representation=model
+    )
+    nnp.model_outputs = ['F']
+
     output = ModelOutput(
-        name=output_property_key,
+        name='F',
         loss_fn=loss_function,
         loss_weight=1.0,
         metrics={}
     )
 
-    # Putting it in the Atomistic Task framework
     task = spk.AtomisticTask(
         model=nnp,
         outputs=[output],

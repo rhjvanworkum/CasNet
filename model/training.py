@@ -4,8 +4,9 @@ import pytorch_lightning
 from pytorch_lightning.loggers import WandbLogger
 import torch
 import schnetpack as schnetpack
-# from schnetpack.data.datamodule import AtomsDataModule
+from schnetpack.data.datamodule import AtomsDataModule
 import os
+from model.data_loader import _atoms_collate_fn, _default_collate_fn
 
 from model.loss_functions import mean_squared_error, symm_matrix_mse
 from model.caschnet_model import create_orbital_model
@@ -28,6 +29,11 @@ def train_model(
   import os
   os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
+  if create_model_fn == create_orbital_model:
+    collate_fn = _atoms_collate_fn
+  else:
+    collate_fn = _default_collate_fn
+
   """ Initializing a dataset """
   dataset = schnetpack.data.datamodule.AtomsDataModule(
     datapath=database_path,
@@ -41,6 +47,7 @@ def train_model(
     num_workers=8,
     pin_memory=True,
     load_properties=[property],
+    collate_fn=collate_fn
   )
 
   """ Initiating the Model """
@@ -65,16 +72,16 @@ def train_model(
   # callbacks for PyTroch Lightning Trainer
   logging.info("Setup trainer")
   callbacks = [
-      schnetpack.train.ModelCheckpoint(
-          monitor="val_loss",
-          mode="min",
-          save_top_k=1,
-          save_last=True,
-          dirpath="checkpoints",
-          filename="{epoch:02d}",
-          # inference_path=save_path,
-          model_path=save_path
-      ),
+      # schnetpack.train.ModelCheckpoint(
+      #     monitor="val_loss",
+      #     mode="min",
+      #     save_top_k=1,
+      #     save_last=True,
+      #     dirpath="checkpoints",
+      #     filename="{epoch:02d}",
+      #     # inference_path=save_path,
+      #     model_path=save_path
+      # ),
       pytorch_lightning.callbacks.LearningRateMonitor(
         logging_interval="epoch"
       ),

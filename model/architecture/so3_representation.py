@@ -3,119 +3,65 @@ from typing import Callable, Dict, Optional
 import hydra
 import torch
 import torch.nn as nn
+from model.architecture.clebsch_gordan import ClebschGordan
+from model.architecture.so3_convolution import SO3Convolution
+from model.architecture.so3_embedding import Embedding, OneHotEncoding
+from model.architecture.so3_interaction_block import SO3InteractionBlock
 
-import schnetpack.nn as snn
-import schnetpack.nn.so3 as so3
 import schnetpack.properties as properties
+import numpy as np
 
-# class FactorizedConvolution(Module, torch.nn.Module):
-#     avg_num_neighbors: Optional[float]
-#     use_sc: bool
 
-#     def __init__(
-#         self,
-#         input_features,
-#         output_features,
-#         node_attrs,
-#         edge_radial,
-#         edge_spherical,
-#         invariant_layers=1,
-#         invariant_neurons=8,
-#         avg_num_neighbors=None,
-#         use_sc=True,
-#         nonlinearity_scalars: Dict[int, Callable] = {"e": "ssp"},
-#         reduce=True,
-#     ) -> None:
-#         super().__init__()
+import e3nn
+from e3nn.o3 import Linear, Irreps
+from torch_scatter import scatter
+import itertools
 
-#         self.init_irreps(
-#             input_features=input_features,
-#             output_features=output_features,
-#             node_attrs=node_attrs,
-#             edge_radial=edge_radial,
-#             edge_spherical=edge_spherical,
-#             output_keys=["output_features"],
-#         )
 
-#         self.avg_num_neighbors = avg_num_neighbors
-#         self.use_sc = use_sc
 
-#         feature_irreps_in = self.irreps_in["input_features"]
-#         feature_irreps_out = self.irreps_out["output_features"]
-#         irreps_edge_attr = self.irreps_in["edge_spherical"]
+def get_filter_possible_out_irreps(lmax: int) -> Callable:
+    allowed_orders = [str(l) + p for (l, p) in itertools.product(range(lmax), ['e', 'o'])]
+    filter_fn = lambda x: any(order in x for order in allowed_orders)
+    return filter_fn
 
-#         # - Build modules -
-#         self.linear_1 = Linear(
-#             irreps_in=feature_irreps_in,
-#             irreps_out=feature_irreps_in,
-#             internal_weights=True,
-#             shared_weights=True,
-#         )
+def determine_feature_output_irreps(lmax: int, input_irreps: Irreps, sh_irreps: Irreps) -> Irreps:
+    tp = e3nn.o3.FullTensorProduct(
+        irreps_in1=input_irreps,
+        irreps_in2=sh_irreps,
+    )
+    possible_out_irreps = str(tp.irreps_out).split('+')
+    irreps_output = '+'.join(filter(get_filter_possible_out_irreps(lmax), possible_out_irreps))
+    return irreps_output
 
-#         # TODO: remove this
-#         feature_irreps_out = Irreps(feature_irreps_out)
+def generate_l_combs(l1, l2):
+            lower = int(abs(l2 - l1))
+            upper = int(l1 + l2)
+            if lower == upper:
+                return [lower]
+            else:
+                return np.arange(lower, upper + 1).tolist()
 
-#         self.tp = TensorProductExpansion(
-#             feature_irreps_in,
-#             (irreps_edge_attr, "edge_spherical"),
-#             (feature_irreps_out, "edge_features"),
-#             "uvu",
-#             internal_weight=False,
-#         )
 
-#         # init_irreps already confirmed that the edge embeddding is all invariant scalars
-#         self.fc = FullyConnectedNet(
-#             [Irreps(self.irreps_in["edge_radial"]).num_irreps]
-#             + invariant_layers * [invariant_neurons]
-#             + [self.tp.tp.weight_numel],
-#             activations["ssp"],
-#         )
 
-#         self.sc = None
-#         if self.use_sc:
-#             self.sc = FullyConnectedTensorProduct(
-#                 feature_irreps_in,
-#                 Irreps(self.irreps_in["node_attrs"]),
-#                 feature_irreps_out,
-#             )
 
-#         self.reduce = reduce
+class TensorProductExpansion(nn.Module):
 
-#     def forward(self, data: Dict[str, Tensor], attrs:Dict[str, Tuple[str, str]]):
-#         input = data
-#         weight = self.fc(input["edge_radial"])
+    def __init__(self) -> None:
+        super().__init__()
+        self.clebsch_gordan = ClebschGordan()
 
-#         x = input["input_features"]
-#         edge_src = input["edge_index"][0]
-#         edge_dst = input["edge_index"][1]
+    def forward(self, features: torch.Tensor, l1: int, l2: int, l3: int):
+        """
+        features are already in the right shape here (just a vector with m indices)
+        """
+        output = torch.zeros((features.shape[0], features.shape[1], 2*l1+1, 2*l2+1))
+        cg = self.clebsch_gordan(l1, l2, l3)
 
-#         if self.sc is not None:
-#             sc = self.sc(x, input["node_attrs"])
-
-#         x = self.linear_1(x)
+        for m1 in np.arange(2 * l1 + 1):
+            for m2 in np.arange(2 * l2 + 1):
+                output[..., m1, m2] = torch.sum(cg[m1, m2, :] * features[..., :], axis=-1)
         
-#         edge_features = self.tp(
-#             left=x[edge_src], right=input["edge_spherical"], weight=weight
-#         )
-#         if self.reduce:
-#             # [edges, feature_dim], [edges, sh_dim], [edges, weight_numel]
-#             x = scatter(edge_features, edge_dst, dim=0, dim_size=len(x))
-
-#             # Necessary to get TorchScript to be able to type infer when its not None
-#             avg_num_neigh: Optional[float] = self.avg_num_neighbors
-#             if avg_num_neigh is not None:
-#                 x = x.div(avg_num_neigh ** 0.5)
-
-#             if self.sc is not None:
-#                 x = x + sc
-#         else:
-#             x = edge_features
-
-#         is_per = attrs["input_features"][0]
-#         attrs = {"output_features": (is_per, self.irreps_out["output_features"])}
-#         data = {"output_features": x}
-#         return data, attrs
-
+        return output
 
 
 class SO3net(nn.Module):
@@ -128,12 +74,12 @@ class SO3net(nn.Module):
     def __init__(
         self,
         n_atom_basis: int,
-        n_interactions: int,
+        n_radial_basis: int,
+        n_interaction_layers: int,
+        use_residual_connections: bool,
         lmax: int,
-        radial_basis: nn.Module,
-        cutoff_fn: Optional[Callable] = None,
-        shared_interactions: bool = False,
-        max_z: int = 100,
+        cutoff: int = 3.0,
+        z_max: int = 6,
     ):
         """
         Args:
@@ -150,45 +96,69 @@ class SO3net(nn.Module):
         super(SO3net, self).__init__()
 
         self.n_atom_basis = n_atom_basis
-        self.n_interactions = n_interactions
+        self.n_radial_basis = n_radial_basis
+        self.n_interaction_layers = n_interaction_layers
+        self.use_residual_connections = use_residual_connections
+        # nonlinearity_type = "gate"
+
         self.lmax = lmax
-        # self.cutoff_fn = hydra.utils.instantiate(cutoff_fn)
-        # self.cutoff = cutoff_fn.cutoff
-        # self.radial_basis = hydra.utils.instantiate(radial_basis)
-        self.cutoff_fn = cutoff_fn
-        self.cutoff = 5.0
-        self.radial_basis = radial_basis
+        self.sh_irreps = e3nn.o3.Irreps.spherical_harmonics(lmax=lmax)
+
+        self.cutoff = cutoff
+        self.z_max = z_max
         
-        # node embedding
-        self.embedding = nn.Embedding(max_z, n_atom_basis, padding_idx=0)
-        self.sh = None
+        self.n_atoms = 12
+
+        # 1. embedding
+        self.embedding = Embedding(lmax=lmax, z_max=z_max, n_atom_basis=n_atom_basis,
+                                   cutoff=cutoff, n_radial_basis=n_radial_basis)
+
+        # 2. interaction blocks using equivariant convolutions
+        self.interaction_blocks = []
+
+        x_input_irreps = Irreps(f"{self.n_atom_basis}x0e")
+        for _ in range(self.n_interaction_layers):
+            x_output_irreps = determine_feature_output_irreps(lmax, x_input_irreps, self.sh_irreps)
+            self.interaction_blocks.append(
+                SO3InteractionBlock(
+                    input_irreps=x_input_irreps,
+                    output_irreps=x_output_irreps,
+                    sh_irreps=self.sh_irreps,
+                    use_residual_connections=use_residual_connections
+                )
+            )
+            x_input_irreps = x_output_irreps
+
+        # 3. change current features -> right amount of channels for each AO block to predict
+        fulvene_orbitals = [0,0,1] * 2 + [0] * 4
+        self.orbitals_degree = torch.Tensor(fulvene_orbitals)
         
-        self.so3convs = snn.replicate_module(
-            lambda: so3.SO3Convolution(lmax, n_atom_basis, self.radial_basis.n_rbf),
-            self.n_interactions,
-            shared_interactions,
-        )
-        self.mixings1 = snn.replicate_module(
-            lambda: nn.Linear(n_atom_basis, n_atom_basis, bias=False),
-            self.n_interactions,
-            shared_interactions,
-        )
-        self.mixings2 = snn.replicate_module(
-            lambda: nn.Linear(n_atom_basis, n_atom_basis, bias=False),
-            self.n_interactions,
-            shared_interactions,
-        )
-        self.mixings3 = snn.replicate_module(
-            lambda: nn.Linear(n_atom_basis, n_atom_basis, bias=False),
-            self.n_interactions,
-            shared_interactions,
-        )
-        self.gatings = snn.replicate_module(
-            lambda: so3.SO3ParametricGatedNonlinearity(n_atom_basis, lmax),
-            self.n_interactions,
-            shared_interactions,
-        )
-        self.so3product = so3.SO3TensorProduct(lmax)
+        S = torch.ones(1, 1)
+        P = torch.tensor([[0, 1.0, 0], [0, 0, 1], [1, 0, 0]])
+        orbs = np.array([S, P])
+        self.M = e3nn.math.direct_sum(*orbs[fulvene_orbitals].tolist())
+        
+        # generate needed l3 combs for each orbital interactions
+        self.orbitals_l3 = [[generate_l_combs(l1, l2) for l1 in self.orbitals_degree] for l2 in self.orbitals_degree]
+
+        self.orb_feats_needed = [0, 0, 0]
+        for orb_i in self.orbitals_l3:
+            for orb_j in orb_i:
+                for el in orb_j:
+                    self.orb_feats_needed[el] += 1
+
+        orbs_feats_irrep = Irreps(f"{self.orb_feats_needed[0]}x0e+{self.orb_feats_needed[1]}x1o+{self.orb_feats_needed[2]}x2e")
+                
+        # 4. hamiltonian prediction stuff
+        self.interaction_blocks.append(
+                SO3InteractionBlock(
+                    input_irreps=x_input_irreps,
+                    output_irreps=orbs_feats_irrep,
+                    sh_irreps=self.sh_irreps,
+                    use_residual_connections=use_residual_connections
+                )
+            )
+        self.tpe = TensorProductExpansion()
         
     def forward(self, inputs: Dict[str, torch.Tensor]):
         """
@@ -204,31 +174,74 @@ class SO3net(nn.Module):
         """
         # get tensors from input dictionary
         atomic_numbers = inputs[properties.Z]
-        r_ij = inputs[properties.Rij]
-        idx_i = inputs[properties.idx_i]
-        idx_j = inputs[properties.idx_j]
+        batch_size = atomic_numbers.shape[0]
+        n_nodes = atomic_numbers.shape[-1]
 
-        # compute atom and pair features
-        d_ij = torch.norm(r_ij, dim=1, keepdim=True)
-        dir_ij = r_ij / d_ij
+        # make fully connected graph
+        full = torch.Tensor([[i for _ in range(n_nodes - 1)] for i in range(n_nodes - 1)])
+        idx = torch.triu_indices(*full.shape)
+        edge_src = full[idx[0], idx[1]].type(torch.long)
+        edge_dst = full.T[idx[0], idx[1]].type(torch.long) + 1
+        edge_vec = inputs[properties.position][:, edge_dst] - inputs[properties.position][:, edge_src]
+
+        # 1. embedding
+        x, edge_radial, edge_sh = self.embedding(atomic_numbers, edge_vec)
+
+        # 2. interaction blocks
+        for interaction_block in self.interaction_blocks:
+            x = interaction_block(x, edge_radial, edge_sh, edge_src, edge_dst, n_nodes)
+    
+        # 3. predict block wise hamiltonians
+        size = int(torch.sum(2 * self.orbitals_degree + 1))
+        H = torch.zeros((batch_size, n_nodes, size, size))
         
-        # Yij = self.sphharm(dir_ij)
-        # radial_ij = self.radial_basis(d_ij)
-        # cutoff_ij = self.cutoff_fn(d_ij)[..., None]
+        # list that keeps track of used features idxs for degree 0, 1, 2, etc...
+        feature_index_counter = [0, 0, 0]
 
-        x0 = self.embedding(atomic_numbers)[:, None]
-        # shape [batch_size x n_atoms, l_channels, n_atom_basis]
-        x = so3.scalar2rsh(x0, self.lmax) 
+        curr_i = 0
+        for idx_i, degree_i in enumerate(self.orbitals_degree):
+            curr_j = 0
+            for idx_j, degree_j in enumerate(self.orbitals_degree):
+                degree_i = int(degree_i)
+                degree_j = int(degree_j)
 
-        # for i in range(self.n_interactions):
-        #     dx = self.so3convs[i](x, radial_ij, Yij, cutoff_ij, idx_i, idx_j)
-        #     ddx = self.mixings1[i](dx)
-        #     dx = self.so3product(dx, ddx)
-        #     dx = self.mixings2[i](dx)
-        #     dx = self.gatings[i](dx)
-        #     dx = self.mixings3[i](dx)
-        #     x = x + dx
+                # extract features from x corresponding to these orbital interactions
+                current_features = []
+                needed = self.orbitals_l3[idx_i][idx_j]
+                for degree in needed:
+                    if degree == 0:
+                        start_idx = feature_index_counter[0]
+                        end_idx = start_idx + 1
+                    elif degree == 1:
+                        start_idx = self.orb_feats_needed[0] + feature_index_counter[1] * 3
+                        end_idx = start_idx + 3
+                    elif degree == 2:
+                        start_idx = self.orb_feats_needed[0] + self.orb_feats_needed[1] * 3 + feature_index_counter[2] * 5
+                        end_idx = start_idx + 5
+                    current_features.append(x[..., start_idx:end_idx])
 
-        # inputs["scalar_representation"] = x[:, 0]
-        # inputs["multipole_representation"] = x
-        # return inputs
+                # fill hamiltonian block of orbital i with idx_i & degree_i <-> orbital j with idx_j & degree_j
+                # by summing over the TPE's of allowed combinations of degree_i & degree_j
+                H[..., curr_i:curr_i + (2*degree_i+1), curr_j:curr_j + (2*degree_j+1)] = torch.sum(torch.stack(
+                    [self.tpe(current_features[idx], l1=degree_i, l2=degree_j, l3=l3) for idx, l3 in enumerate(generate_l_combs(degree_i, degree_j))]
+                ), axis=0)
+
+                curr_j += 2*degree_j+1
+            curr_i += 2*degree_i+1
+
+        # average over atomic contributions
+        H = torch.mean(H, axis=1)
+
+        # symmetrize hamiltonian
+        H = H + torch.transpose(H, -1, -2)
+
+        # transform from e3nn basis to original basis
+        H = self.M.T @ H @ self.M
+
+        inputs['F'] = H.reshape(H.shape[0], -1)
+        return inputs
+
+
+
+        
+
