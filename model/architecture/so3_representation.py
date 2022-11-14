@@ -46,9 +46,9 @@ def generate_l_combs(l1, l2):
 
 class TensorProductExpansion(nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self, device: torch.device) -> None:
         super().__init__()
-        self.clebsch_gordan = ClebschGordan()
+        self.clebsch_gordan = ClebschGordan().to(device)
 
     def forward(self, features: torch.Tensor, l1: int, l2: int, l3: int):
         """
@@ -76,9 +76,9 @@ class SO3net(nn.Module):
         n_atom_basis: int,
         n_radial_basis: int,
         n_interaction_layers: int,
-        use_residual_connections: bool,
-        lmax: int,
-        cutoff: int = 3.0,
+        use_residual_connections: bool = True,
+        lmax: int = 2,
+        cutoff: int = 5.0,
         z_max: int = 6,
     ):
         """
@@ -107,11 +107,11 @@ class SO3net(nn.Module):
         self.cutoff = cutoff
         self.z_max = z_max
         
-        self.n_atoms = 12
+        self.device = torch.device('cuda')
 
         # 1. embedding
         self.embedding = Embedding(lmax=lmax, z_max=z_max, n_atom_basis=n_atom_basis,
-                                   cutoff=cutoff, n_radial_basis=n_radial_basis)
+                                   cutoff=cutoff, n_radial_basis=n_radial_basis).to(self.device)
 
         # 2. interaction blocks using equivariant convolutions
         self.interaction_blocks = []
@@ -124,7 +124,8 @@ class SO3net(nn.Module):
                     input_irreps=x_input_irreps,
                     output_irreps=x_output_irreps,
                     sh_irreps=self.sh_irreps,
-                    use_residual_connections=use_residual_connections
+                    use_residual_connections=use_residual_connections,
+                    device=self.device
                 )
             )
             x_input_irreps = x_output_irreps
@@ -136,7 +137,7 @@ class SO3net(nn.Module):
         S = torch.ones(1, 1)
         P = torch.tensor([[0, 1.0, 0], [0, 0, 1], [1, 0, 0]])
         orbs = np.array([S, P])
-        self.M = e3nn.math.direct_sum(*orbs[fulvene_orbitals].tolist())
+        self.M = e3nn.math.direct_sum(*orbs[fulvene_orbitals].tolist()).to(self.device)
         
         # generate needed l3 combs for each orbital interactions
         self.orbitals_l3 = [[generate_l_combs(l1, l2) for l1 in self.orbitals_degree] for l2 in self.orbitals_degree]
@@ -155,10 +156,19 @@ class SO3net(nn.Module):
                     input_irreps=x_input_irreps,
                     output_irreps=orbs_feats_irrep,
                     sh_irreps=self.sh_irreps,
-                    use_residual_connections=use_residual_connections
+                    use_residual_connections=use_residual_connections,
+                    device=self.device
                 )
             )
-        self.tpe = TensorProductExpansion()
+        self.tpe = TensorProductExpansion(device=self.device)
+        
+    def _generate_graph_edges(self, n_nodes: int, positions: torch.Tensor):
+        full = torch.Tensor([[i for _ in range(n_nodes - 1)] for i in range(n_nodes - 1)]).to(self.device)
+        idx = torch.triu_indices(*full.shape)
+        edge_src = full[idx[0], idx[1]].type(torch.long)
+        edge_dst = full.T[idx[0], idx[1]].type(torch.long) + 1
+        edge_vec = positions[:, edge_dst] - positions[:, edge_src]
+        return edge_src, edge_dst, edge_vec
         
     def forward(self, inputs: Dict[str, torch.Tensor]):
         """
@@ -173,16 +183,13 @@ class SO3net(nn.Module):
             return_intermediate=True was used.
         """
         # get tensors from input dictionary
-        atomic_numbers = inputs[properties.Z]
+        positions = inputs[properties.position].to(self.device)
+        atomic_numbers = inputs[properties.Z].to(self.device)
         batch_size = atomic_numbers.shape[0]
         n_nodes = atomic_numbers.shape[-1]
 
         # make fully connected graph
-        full = torch.Tensor([[i for _ in range(n_nodes - 1)] for i in range(n_nodes - 1)])
-        idx = torch.triu_indices(*full.shape)
-        edge_src = full[idx[0], idx[1]].type(torch.long)
-        edge_dst = full.T[idx[0], idx[1]].type(torch.long) + 1
-        edge_vec = inputs[properties.position][:, edge_dst] - inputs[properties.position][:, edge_src]
+        edge_src, edge_dst, edge_vec = self._generate_graph_edges(n_nodes, positions)
 
         # 1. embedding
         x, edge_radial, edge_sh = self.embedding(atomic_numbers, edge_vec)
@@ -193,7 +200,7 @@ class SO3net(nn.Module):
     
         # 3. predict block wise hamiltonians
         size = int(torch.sum(2 * self.orbitals_degree + 1))
-        H = torch.zeros((batch_size, n_nodes, size, size))
+        H = torch.zeros((batch_size, n_nodes, size, size)).to(self.device)
         
         # list that keeps track of used features idxs for degree 0, 1, 2, etc...
         feature_index_counter = [0, 0, 0]
@@ -236,7 +243,7 @@ class SO3net(nn.Module):
         H = H + torch.transpose(H, -1, -2)
 
         # transform from e3nn basis to original basis
-        H = self.M.T @ H @ self.M
+        # H = self.M.T @ H @ self.M
 
         inputs['F'] = H.reshape(H.shape[0], -1)
         return inputs

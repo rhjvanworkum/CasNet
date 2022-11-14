@@ -16,7 +16,7 @@ if __name__ == "__main__":
   batch_size = 16
   cutoff = 5.0
   basis_set_size = 14
-  use_wandb = False
+  use_wandb = True
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--db_name', type=str)

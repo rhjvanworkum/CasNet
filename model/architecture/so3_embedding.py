@@ -41,16 +41,17 @@ class RadialBasisEncoding(nn.Module):
                        num_basis: int = 12) -> None:
         super().__init__()
         self.num_basis = num_basis
-        self.basis = BesselBasis(r_max, r_min, num_basis, trainable=True, one_over_r=True)
-        self.cutoff = PolynomialCutoff(r_max, p=6)
+        self.r_min = r_min
+        self.r_max = r_max
+        # self.basis = BesselBasis(r_max, r_min, num_basis, trainable=True, one_over_r=True)
+        # self.cutoff = PolynomialCutoff(r_max, p=6)
 
     def forward(self, features: torch.Tensor):
         """
         :param features: tensor containing input features, usually distance vectors
         """
-        norms = torch.norm(features, dim=-1)
-        encoding = self.basis(norms)
-        return encoding
+        return e3nn.math.soft_one_hot_linspace(features.norm(dim=-1), self.r_min, self.r_max, 
+                                               self.num_basis, basis='smooth_finite', cutoff=True).mul(self.num_basis**0.5)
 
 
 class Embedding(nn.Module):

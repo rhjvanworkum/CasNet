@@ -25,7 +25,6 @@ class SO3Convolution(nn.Module):
         
         radial_dim = 12
         self.filter_network = e3nn.nn.FullyConnectedNet([radial_dim, self.tp.weight_numel // 2, self.tp.weight_numel], torch.relu)
-
         
     def forward(self, node_features: torch.Tensor,
                       edge_sh_features: torch.Tensor,
@@ -33,7 +32,6 @@ class SO3Convolution(nn.Module):
                       edge_src: torch.Tensor,
                       edge_dst: torch.Tensor,
                       n_nodes: int):
-        n_nodes
         tensor_product = self.tp(node_features[..., edge_src, :], 
                                  edge_sh_features, 
                                  self.filter_network(edge_radial_features))
