@@ -4,7 +4,6 @@ Script for training NN on CAS orbitals
 import argparse
 import torch
 from model.caschnet_model import create_orbital_model
-from model.caschnet_so3_model import create_so3_orbital_model
 
 from model.loss_functions import mean_squared_error, symm_matrix_mse
 from model.training import train_model
@@ -28,8 +27,7 @@ if __name__ == "__main__":
   database_path = './data_storage/' + args.db_name
   split_file = './data_storage/' + args.split_name
   model_name = args.model_name
-  # create_model_fn = create_orbital_model
-  create_model_fn = create_so3_orbital_model
+  create_model_fn = create_orbital_model
 
   # property = args.property
   # if property == 'mo_coeffs' or property == 'mo_coeffs_adjusted' or property == 'dm':

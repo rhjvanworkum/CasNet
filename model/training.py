@@ -29,11 +29,6 @@ def train_model(
   import os
   os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-  if create_model_fn == create_orbital_model:
-    collate_fn = _atoms_collate_fn
-  else:
-    collate_fn = _default_collate_fn
-
   """ Initializing a dataset """
   dataset = schnetpack.data.datamodule.AtomsDataModule(
     datapath=database_path,
@@ -46,8 +41,7 @@ def train_model(
     property_units={property: 1.0},
     num_workers=8,
     pin_memory=True,
-    load_properties=[property],
-    collate_fn=collate_fn
+    load_properties=[property]
   )
 
   """ Initiating the Model """

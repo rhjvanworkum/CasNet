@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torchmetrics import Metric
 
 import schnetpack as spk
-import schnetpack.properties as properties
+# import schnetpack.properties as properties
 import schnetpack.nn as snn
 
 class HamiltonianOutput(nn.Module):
@@ -61,14 +61,14 @@ class HamiltonianOutput(nn.Module):
 
         l0, l1 = self.outnet((l0, l1))
 
-        if self.aggregation_mode is not None:
-            idx_m = inputs[properties.idx_m]
-            maxm = int(idx_m[-1]) + 1
-            l0 = snn.scatter_add(l0, idx_m, dim_size=maxm)
-            l0 = torch.squeeze(l0, -1)
+        # if self.aggregation_mode is not None:
+        #     idx_m = inputs[properties.idx_m]
+        #     maxm = int(idx_m[-1]) + 1
+        #     l0 = snn.scatter_add(l0, idx_m, dim_size=maxm)
+        #     l0 = torch.squeeze(l0, -1)
 
-            if self.aggregation_mode == "avg":
-                l0 = l0 / inputs[properties.n_atoms]
+        #     if self.aggregation_mode == "avg":
+        #         l0 = l0 / inputs[properties.n_atoms]
 
         H = l0.reshape(-1, 14, 14)
         H = H + torch.transpose(H, -1, -2)

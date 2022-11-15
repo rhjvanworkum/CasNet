@@ -1,3 +1,6 @@
 [submodule "pyscf"]
 	path = pyscf
 	url = https://github.com/rhjvanworkum/pyscf.git
+[submodule "phisnet_fork"]
+	path = phisnet_fork
+	url = https://github.com/rhjvanworkum/phisnet_fork.git
