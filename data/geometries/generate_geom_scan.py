@@ -58,11 +58,11 @@ def interpolate_geometry(geom1, geom2, n):
 
 
 if __name__ == "__main__":
-  fulvene_0 = read_xyz_file('/home/ruard/Downloads/hydrogen_1.xyz')
-  fulvene_1 = read_xyz_file('/home/ruard/Downloads/hydrogen_2.xyz')
+  fulvene_0 = read_xyz_file('/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_0.xyz')
+  fulvene_1 = read_xyz_file('/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_199.xyz')
 
-  geometries = interpolate_geometry(fulvene_0, fulvene_1, 50)
+  geometries = interpolate_geometry(fulvene_0, fulvene_1, 250)
 
   for idx, geometry in enumerate(geometries):
-    write_xyz_file(geometry, '/home/ruard/Documents/experiments/fulvene/geometries/hydrogen/geometry_' + str(idx) + '.xyz')
+    write_xyz_file(geometry, '/home/ruard/Documents/experiments/fulvene/geometries/fulvene_geometry_scan_250/geometry_' + str(idx) + '.xyz')
 

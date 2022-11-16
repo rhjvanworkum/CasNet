@@ -14,38 +14,54 @@ def generate_split(train_split: float, val_split: float, test_split: float, n: i
 
 
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--name', type=str)
-  parser.add_argument('--n', type=int)
-  parser.add_argument('--train_split', type=float)
-  parser.add_argument('--val_split', type=float)
-  parser.add_argument('--test_split', type=float)
-  args = parser.parse_args()
+  # parser = argparse.ArgumentParser()
+  # parser.add_argument('--name', type=str)
+  # parser.add_argument('--n', type=int)
+  # parser.add_argument('--train_split', type=float)
+  # parser.add_argument('--val_split', type=float)
+  # parser.add_argument('--test_split', type=float)
+  # args = parser.parse_args()
   
-  name = 'split_10k'
+  name = 'fulvene_gs_250_extra'
   save_path = './data_storage/' + name + '.npz'
-  
+  n = 250
+
   train_split = 0.8
-  val_split = 0.2
-  
-  tot_size = 9995
-  test_size = 50
-  
-  n = 9945
-  data_idx = np.random.choice(np.arange(tot_size - test_size), n)
-  
-  np.random.shuffle(data_idx)
-  # test_idxs = data_idx[:test_size]
-  # non_test_idxs = data_idx[test_size:]
-  train_idxs = data_idx[:int(train_split * len(data_idx))]
-  val_idxs = data_idx[int(train_split * len(data_idx)):]
+  val_split = 0.1
+  test_split = 0.1
+
+  non_test_idxs = np.random.shuffle(np.arange(n - 25))
+  train_idxs = non_test_idxs[:int(train_split * n)]
+  val_idxs = non_test_idxs[int(train_split * n):]
+
+  test_idxs = np.arange(n - 25, n)
 
   np.savez(save_path, 
     train_idx=train_idxs, 
     val_idx=val_idxs,
-    test_idx=np.arange(tot_size)[-50:])
+    test_idx=test_idxs)
+
+  # train_split = 0.8
+  # val_split = 0.2
+  
+  # tot_size = 9995
+  # test_size = 50
+  
+  # n = 9945
+  # data_idx = np.random.choice(np.arange(tot_size - test_size), n)
+  
+  # np.random.shuffle(data_idx)
+  # train_idxs = data_idx[:int(train_split * len(data_idx))]
+  # val_idxs = data_idx[int(train_split * len(data_idx)):]
+
+  # np.savez(save_path, 
+  #   train_idx=train_idxs, 
+  #   val_idx=val_idxs,
+  #   test_idx=np.arange(tot_size)[-50:])
   
   
+
+
   # if sample:
   #   n = 1200
   #   data_idx = np.random.choice(np.arange(args.n), n)
