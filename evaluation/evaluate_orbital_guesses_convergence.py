@@ -13,7 +13,8 @@ from evaluation.utils import compute_F_model_orbitals, compute_ao_min_orbitals, 
 initial_guess_dict = {
   'ao_min': compute_ao_min_orbitals,
   # 'ML-MO': compute_mo_model_orbitals,
-  'ML-F': compute_F_model_orbitals,
+  # 'ML-F': compute_F_model_orbitals,
+  'phisnet': compute_phisnet_orbitals
 }
 
 def run_casscf_calculation(geometry_file: str,
@@ -63,15 +64,13 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('--geometry_folder', type=str)
   parser.add_argument('--split_name', type=str)
-  # parser.add_argument('--mo_model', type=str)
-  parser.add_argument('--F_model', type=str)
+  parser.add_argument('--model', type=str)
   parser.add_argument('--basis', type=str)
   args = parser.parse_args()
 
   geometry_folder = base_dir + args.geometry_folder
   split_file = './data_storage/' + args.split_name
-  # mo_model = './checkpoints/' + args.mo_model + '.pt'
-  F_model = './checkpoints/' + args.F_model + '.pt'
+  model = './checkpoints/' + args.F_model + '.pt'
   basis = args.basis
 
   geometry_files = find_all_geometry_files_in_folder(geometry_folder)
@@ -79,12 +78,7 @@ if __name__ == "__main__":
   geometry_files = np.array(geometry_files)[np.load(split_file)['val_idx']]
 
   for key, method in initial_guess_dict.items():
-    model_path = ''
-    # if key == 'ML-MO':
-    #   model_path = mo_model
-    if key == 'ML-F':
-      model_path = F_model
-    evaluate_and_print_initial_guess_convergence(geometry_files, model_path, key, method, basis)
+    evaluate_and_print_initial_guess_convergence(geometry_files, model, key, method, basis)
 
 
 

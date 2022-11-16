@@ -50,11 +50,9 @@ def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_
               atomic_properties="",
               molecular_properties=[{'mo_coeffs': casscf_results[idx].mo_coeffs.flatten(), 
                                      'mo_coeffs_adjusted': casscf_results[idx].mo_coeffs_adjusted.flatten(), 
-                                     'F': casscf_results[idx].F.flatten(),
                                      'mo_energies': casscf_results[idx].mo_energies,
-                                     'hcore': casscf_results[idx].h_core.flatten(),
+                                     'F': casscf_results[idx].F.flatten(),
                                      'S': casscf_results[idx].S.flatten(),
-                                     'dm': casscf_results[idx].dm.flatten(),
                                      }])
 
   with connect(db_path) as conn:
@@ -62,18 +60,16 @@ def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_
                      "_property_unit_dict": {
                       "mo_coeffs": 1.0, 
                       "mo_coeffs_adjusted": 1.0, 
+                      'mo_energies': 1.0,
                       "F": 1.0, 
-                      "hcore": 1.0,
                       "S": 1.0,
-                      "dm": 1.0
                     },
                      "atomrefs": {
                       'mo_coeffs': [0.0 for _ in range(36)],
                       "mo_coeffs_adjusted": [0.0 for _ in range(36)],
+                      'mo_energies': [0.0 for _ in range(36)],
                       'F': [0.0 for _ in range(36)],
-                      'hcore': [0.0 for _ in range(36)],
                       'S': [0.0 for _ in range(36)],
-                      'dm': [0.0 for _ in range(36)]
                       }
                     }
 
