@@ -7,23 +7,14 @@ from typing import List, Tuple
 
 from data.utils import find_all_files_in_output_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_idx
 
-def normalise_rows(mat):
-    '''Normalise each row of mat'''
-    return np.array(tuple(map(lambda v: v / np.linalg.norm(v), mat)))
+def phase_correct_orbitals(ref, target):
+  ordered_target = target.copy()
 
-def correct_orbitals(ref, target, sort=False):
-    '''Reorder target molecular orbitals according to maximum overlap with ref.
-    Orbitals phases are also adjusted to match ref.'''
-    if sort:
-        Moverlap=np.dot(normalise_rows(ref), normalise_rows(target).T)
-        orb_order=np.argmax(abs(Moverlap),axis=1)
-        target = target[orb_order]
+  for idx in range(ordered_target.shape[0]):
+      if np.dot(ref[:, idx], ordered_target[:, idx]) < 0:
+          ordered_target[:, idx] = -1 * ordered_target[:, idx]
 
-    for idx in range(target.shape[0]):
-        if np.dot(ref[idx, :], target[idx, :]) < 0:
-            target[idx, :] = -1 * target[idx, :]
-
-    return target
+  return ordered_target
 
 def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_path: str) -> None:
   geometry_files = find_all_geometry_files_in_folder(geometry_folder)
@@ -35,11 +26,10 @@ def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_
   
   # phase_correct & sort orbitals
   casscf_results[0].mo_coeffs_adjusted = casscf_results[0].mo_coeffs
-  casscf_results[0].F_adjusted = casscf_results[0].F
-  for casscf_result in casscf_results[1:]:
-    casscf_result.mo_coeffs_adjusted = correct_orbitals(ref=casscf_results[0].mo_coeffs.T, 
-                                                        target=casscf_result.mo_coeffs.copy().T,
-                                                        sort=True).T
+  for idx, casscf_result in enumerate(casscf_results):
+    if idx > 0:
+      casscf_result.mo_coeffs_adjusted = phase_correct_orbitals(ref=casscf_results[idx - 1].mo_coeffs_adjusted, 
+                                                                target=casscf_result.mo_coeffs)
 
   
   # save geometry files & calculated properties
