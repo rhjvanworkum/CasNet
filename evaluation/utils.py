@@ -1,5 +1,5 @@
-from typing import Tuple
-from model.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model
+from typing import Tuple, Optional, Any
+from model.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model, infer_orbitals_from_phisnet_model
 from pyscf import gto, scf, mcscf
 import numpy as np
 import scipy.linalg
@@ -12,7 +12,8 @@ basis_dict = {
 
 def compute_ao_min_orbitals(model_path: str,
                             geometry_path: str,
-                            basis: str) -> Tuple[np.ndarray, np.ndarray]:
+                            basis: str,
+                            args: Optional[Any]) -> Tuple[np.ndarray, np.ndarray]:
   molecule = gto.M(atom=geometry_path,
                    basis=basis,
                    spin=0,
@@ -26,7 +27,8 @@ def compute_ao_min_orbitals(model_path: str,
   
 def compute_huckel_orbitals(model_path: str,
                             geometry_path: str,
-                            basis: str) -> Tuple[np.ndarray, np.ndarray]:
+                            basis: str,
+                            args: Optional[Any]) -> Tuple[np.ndarray, np.ndarray]:
   molecule = gto.M(atom=geometry_path,
                    basis=basis,
                    spin=0,
@@ -40,7 +42,8 @@ def compute_huckel_orbitals(model_path: str,
 
 def compute_mo_model_orbitals(model_path: str,
                               geometry_path: str,
-                              basis: str):
+                              basis: str,
+                            args: Optional[Any]):
   basis_set_size = basis_dict[basis]
   return infer_orbitals_from_mo_model(model_path, 
                                       geometry_path,
@@ -49,14 +52,19 @@ def compute_mo_model_orbitals(model_path: str,
 
 def compute_F_model_orbitals(model_path: str,
                               geometry_path: str,
-                              basis: str):
+                              basis: str,
+                            args: Optional[Any]):
   basis_set_size = basis_dict[basis]
   return infer_orbitals_from_F_model(model_path, 
                                       geometry_path,
                                       basis,
                                       basis_set_size)
 
-
+def compute_phisnet_model_orbitals(model_path: str,
+                                   geometry_path: str,
+                                   basis: str,
+                                   args: Optional[Any]):
+  return infer_orbitals_from_phisnet_model(model_path, geometry_path, args, basis)
 
 def compute_converged_casscf_orbitals(model_path: str,
                                       geometry_path: str,
