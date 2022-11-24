@@ -12,9 +12,9 @@ from evaluation.utils import compute_F_model_orbitals, compute_ao_min_orbitals, 
 
 initial_guess_dict = {
   'ao_min': compute_ao_min_orbitals,
-  # 'ML-MO': compute_mo_model_orbitals,
-  # 'ML-F': compute_F_model_orbitals,
-  'phisnet': compute_phisnet_orbitals
+  'ML-MO': compute_mo_model_orbitals,
+  'ML-F': compute_F_model_orbitals,
+  # 'phisnet': compute_phisnet_orbitals
 }
 
 def run_casscf_calculation(geometry_file: str,

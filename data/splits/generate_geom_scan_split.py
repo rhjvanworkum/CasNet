@@ -12,8 +12,8 @@ if __name__ == "__main__":
   data_idxs = np.arange(n)
   np.random.shuffle(data_idxs)
   train_idxs = data_idxs[:int(train_split * n)]
-  val_idxs = data_idxs[int(train_split * n):int(train_split + val_split * n)]
-  test_idxs = data_idxs[int(train_split + val_split * n):]
+  val_idxs = data_idxs[int(train_split * n):int((train_split + val_split) * n)]
+  test_idxs = data_idxs[int((train_split + val_split) * n):]
 
   np.savez(save_path, 
     train_idx=train_idxs, 
