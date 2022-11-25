@@ -1,7 +1,7 @@
 import numpy as np
 
 if __name__ == "__main__":  
-  name = 'fulvene_gs_250_inter'
+  name = 'fulvene_md_250'
   save_path = './data_storage/' + name + '.npz'
   n = 250
 
@@ -9,11 +9,11 @@ if __name__ == "__main__":
   val_split = 0.1
   test_split = 0.1
 
-  data_idxs = np.arange(n)
+  data_idxs = np.arange(225)
   np.random.shuffle(data_idxs)
   train_idxs = data_idxs[:int(train_split * n)]
-  val_idxs = data_idxs[int(train_split * n):int((train_split + val_split) * n)]
-  test_idxs = data_idxs[int((train_split + val_split) * n):]
+  val_idxs = data_idxs[int(train_split * n):]
+  test_idxs = np.arange(225, 250)
 
   np.savez(save_path, 
     train_idx=train_idxs, 
