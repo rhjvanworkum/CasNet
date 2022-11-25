@@ -33,3 +33,16 @@ build pyscf from scratch:
 ##### 3.3 Evaluate orbital convergence on validation/test set
 - `python evaluation/evaluate_orbital_guesses_convergence.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`
 - `python evaluation/evaluate_orbital_guesses_energies.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`
+
+
+necessary packages:
+- schnetpack
+- apsw
+- pyscf
+- sympy
+- matscipy
+- dirsync
+- fasteners
+- torch_ema
+- hydra
+- pytorch_lightning

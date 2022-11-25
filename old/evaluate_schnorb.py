@@ -11,7 +11,7 @@ from evaluation.evaluate_orbital_guesses_convergence import run_casscf_calculati
 from evaluation.utils import compute_casci_energy, compute_converged_casci_energy, compute_converged_casscf_orbitals
 import matplotlib.pyplot as plt
 
-from model.inference import calculate_overlap_matrix
+from evaluation.inference import calculate_overlap_matrix
 
 def infer_orbitals(predictions, idx, geometry_path, with_S=False):
   F = predictions['hamiltonian'][idx]

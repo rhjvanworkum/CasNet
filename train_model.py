@@ -14,7 +14,7 @@ if __name__ == "__main__":
   lr = 1e-3
   batch_size = 16
   cutoff = 5.0
-  basis_set_size = 14
+  basis_set_size = 36
   use_wandb = True
 
   parser = argparse.ArgumentParser()
@@ -29,12 +29,7 @@ if __name__ == "__main__":
   model_name = args.model_name
   create_model_fn = create_orbital_model
 
-  # property = args.property
-  # if property == 'mo_coeffs' or property == 'mo_coeffs_adjusted' or property == 'dm':
-  #   loss_fn = mean_squared_error
-  # elif property == 'F':
-  #   loss_fn = symm_matrix_mse
-  property = 'F'
+  property = args.property
   loss_fn = torch.nn.functional.mse_loss
 
   train_model(save_path='./checkpoints/' + model_name + '.pt',

@@ -1,7 +1,7 @@
 from typing import Callable
 import torch
 import schnetpack as spk
-from model.architecture.model_output import HamiltonianOutput
+from model.architecture.model_output import HamiltonianOutput, MatrixOutput
 from schnetpack import ModelOutput
 
 from torch.optim.lr_scheduler import _LRScheduler
@@ -38,12 +38,22 @@ def create_orbital_model(loss_function: Callable,
         radial_basis=spk.nn.GaussianRBF(n_rbf=20, cutoff=cutoff),
         cutoff_fn=spk.nn.CosineCutoff(cutoff)
     )
-    pred_module = HamiltonianOutput(
-        output_key=output_property_key,
-        n_in=representation.n_atom_basis,
-        n_layers=2,
-        n_out=basis_set_size**2
-    )
+    if output_property_key == 'F':
+        pred_module = HamiltonianOutput(
+            output_key=output_property_key,
+            n_in=representation.n_atom_basis,
+            n_layers=2,
+            n_out=basis_set_size**2,
+            basis_set_size=basis_set_size
+        )
+    else:
+        pred_module = MatrixOutput(
+            output_key=output_property_key,
+            n_in=representation.n_atom_basis,
+            n_layers=2,
+            n_out=basis_set_size**2,
+            basis_set_size=basis_set_size
+        )
     nnp = spk.model.NeuralNetworkPotential(
         representation=representation,
         input_modules=[pairwise_distance],
@@ -63,10 +73,10 @@ def create_orbital_model(loss_function: Callable,
         outputs=[output],
         optimizer_cls=torch.optim.Adam,
         optimizer_args={"lr": lr},
-        scheduler_cls=torch.optim.lr_scheduler.ReduceLROnPlateau,
-        scheduler_args={'threshold': 1e-6, 'patience': 5},
-        # scheduler_cls=NoamLR,
-        # scheduler_args={'warmup_steps': 20},
+        # scheduler_cls=torch.optim.lr_scheduler.ReduceLROnPlateau,
+        # scheduler_args={'threshold': 1e-6, 'patience': 5},
+        scheduler_cls=NoamLR,
+        scheduler_args={'warmup_steps': 25},
         scheduler_monitor='val_loss'
     )
 

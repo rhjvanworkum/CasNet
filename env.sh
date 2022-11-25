@@ -1,7 +1,9 @@
 # include python path
-PYTHONPATH="/home/ruard/code/caschnet/:/home/ruard/code/caschnet/schnetpack/src/:$PYTHONPATH"
+PYTHONPATH="/home/ruard/code/caschnet/:/home/ruard/code/schnetpack/src/:/home/ruard/code/caschnet/phisnet_fork/:$PYTHONPATH"
 export PYTHONPATH
-PYSCF_EXT_PATH="/home/ruard/anaconda3/envs/caschnet/lib/python3.8/site-packages/pyscf"
+
+# include PySCF path
+PYSCF_EXT_PATH="/home/ubuntu/anaconda3/envs/caschnet/lib/python3.8/site-packages/pyscf"
 export PYSCF_EXT_PATH
 
 # set files base dir

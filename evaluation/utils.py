@@ -1,10 +1,8 @@
-from typing import Tuple
-from model.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model
+from typing import Tuple, Optional, Any
+from evaluation.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model, infer_orbitals_from_phisnet_model
 from pyscf import gto, scf, mcscf
 import numpy as np
 import scipy.linalg
-
-
 
 basis_dict = {
   'sto_6g': 36,
@@ -56,7 +54,10 @@ def compute_F_model_orbitals(model_path: str,
                                       basis,
                                       basis_set_size)
 
-
+def compute_phisnet_model_orbitals(model_path: str,
+                                   geometry_path: str,
+                                   basis: str):
+  return infer_orbitals_from_phisnet_model(model_path, geometry_path, basis)
 
 def compute_converged_casscf_orbitals(model_path: str,
                                       geometry_path: str,
