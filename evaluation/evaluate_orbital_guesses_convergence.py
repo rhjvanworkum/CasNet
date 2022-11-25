@@ -33,14 +33,13 @@ def evaluate_and_print_initial_guess_convergence(geometry_files: List[str],
                                                  model_path: str, 
                                                  key: str, 
                                                  method: Callable, 
-                                                 basis: str,
-                                                 args: Optional[argparse.Namespace]):
+                                                 basis: str):
   macro_iterations = []
   micro_iterations = []
   inner_iterations = []
   e_tots = []
   for idx, geometry_file in enumerate(geometry_files):
-    _, mo = method(model_path, geometry_file, basis, args)
+    _, mo = method(model_path, geometry_file, basis)
     conv, e_tot, imacro, imicro, iinner = run_casscf_calculation(geometry_file, mo)
     print(f'{key} at calc {idx}: converged: {conv} {imacro} - {imicro} - {iinner}')
     macro_iterations.append(imacro)
@@ -57,13 +56,11 @@ if __name__ == "__main__":
   base_dir = os.environ['base_dir']
 
   initial_guess_dict = {
-    'ao_min': compute_ao_min_orbitals,
-    'ML-MO': compute_mo_model_orbitals,
-    'ML-F': compute_F_model_orbitals,
-    # 'phisnet': compute_phisnet_model_orbitals
+    # 'ao_min': compute_ao_min_orbitals,
+    # 'ML-MO': compute_mo_model_orbitals,
+    # 'ML-F': compute_F_model_orbitals,
+    'phisnet': compute_phisnet_model_orbitals
   }
-
-  phisnet_args = parse_command_line_arguments()
 
   geometry_folder = base_dir + 'geometries/fulvene_geom_scan_250/'
   split_file = './data_storage/' + 'fulvene_gs_250_inter.npz'
@@ -78,14 +75,14 @@ if __name__ == "__main__":
   geometry_files = np.array(geometry_files)[np.load(split_file)['val_idx']]
 
   for key, method in initial_guess_dict.items():
-    if key == 'ao-min':
-      evaluate_and_print_initial_guess_convergence(geometry_files, None, key, method, basis, args=None)
+    if key == 'ao_min':
+      evaluate_and_print_initial_guess_convergence(geometry_files, None, key, method, basis)
     elif key == 'ML-MO':
-      evaluate_and_print_initial_guess_convergence(geometry_files, MO_model, key, method, basis, args=None)
+      evaluate_and_print_initial_guess_convergence(geometry_files, MO_model, key, method, basis)
     elif key == 'ML-F':
-      evaluate_and_print_initial_guess_convergence(geometry_files, F_model, key, method, basis, args=None)
+      evaluate_and_print_initial_guess_convergence(geometry_files, F_model, key, method, basis)
     if key == 'phisnet':
-      evaluate_and_print_initial_guess_convergence(geometry_files, phisnet_model, key, method, basis, args=phisnet_args)
+      evaluate_and_print_initial_guess_convergence(geometry_files, phisnet_model, key, method, basis)
 
 
 
