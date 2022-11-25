@@ -1,14 +1,14 @@
 from typing import Tuple, Any
 import numpy as np
 import torch
-from data.utils import read_xyz_file
-from phisnet_fork.utils.transform_hamiltonians import transform_hamiltonians_from_lm_to_ao
 import schnetpack as spk
 from ase import io
 import scipy
 import scipy.linalg
-from pyscf import gto, scf, mcscf
+from pyscf import gto
 
+from data.utils import read_xyz_file
+from phisnet_fork.utils.transform_hamiltonians import transform_hamiltonians_from_lm_to_ao
 from phisnet_fork.utils.custom_data_module import CustomDataModule
 from phisnet_fork.utils.phisnet import PhisNet
 from phisnet_fork.train import load_model

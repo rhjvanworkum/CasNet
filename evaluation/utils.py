@@ -1,10 +1,8 @@
 from typing import Tuple, Optional, Any
-from model.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model, infer_orbitals_from_phisnet_model
+from evaluation.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model, infer_orbitals_from_phisnet_model
 from pyscf import gto, scf, mcscf
 import numpy as np
 import scipy.linalg
-
-
 
 basis_dict = {
   'sto_6g': 36,
