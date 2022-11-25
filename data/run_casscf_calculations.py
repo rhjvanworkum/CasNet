@@ -57,8 +57,8 @@ def run_casscf_calculations(geometry_folder: str,
   guess_mos = None
 
   files = find_all_geometry_files_in_folder(geometry_folder)    
-  files = sort_geometry_files_by_idx(files)
-  # files = sort_geometry_files_by_distance(files, '/home/ruard/Documents/experiments/fulvene/geometries/geom_scan_200/geometry_0.xyz')   
+  # files = sort_geometry_files_by_idx(files)
+  files = sort_geometry_files_by_distance(files, '/home/ruard/Documents/experiments/fulvene/geometries/fulvene_geom_scan_250/geometry_0.xyz')   
   # print(len(files))  
       
   for file in tqdm(files, total=len(files)):
