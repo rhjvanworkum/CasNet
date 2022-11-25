@@ -4,9 +4,6 @@ import pytorch_lightning
 from pytorch_lightning.loggers import WandbLogger
 import torch
 import schnetpack as schnetpack
-from schnetpack.data.datamodule import AtomsDataModule
-import os
-from model.data_loader import _atoms_collate_fn, _default_collate_fn
 
 from model.loss_functions import mean_squared_error, symm_matrix_mse
 from model.caschnet_model import create_orbital_model
@@ -66,22 +63,21 @@ def train_model(
   # callbacks for PyTroch Lightning Trainer
   logging.info("Setup trainer")
   callbacks = [
-      # schnetpack.train.ModelCheckpoint(
-      #     monitor="val_loss",
-      #     mode="min",
-      #     save_top_k=1,
-      #     save_last=True,
-      #     dirpath="checkpoints",
-      #     filename="{epoch:02d}",
-      #     # inference_path=save_path,
-      #     model_path=save_path
-      # ),
+      schnetpack.train.ModelCheckpoint(
+          monitor="val_loss",
+          mode="min",
+          save_top_k=1,
+          save_last=True,
+          dirpath="checkpoints",
+          filename="{epoch:02d}",
+          inference_path=save_path
+      ),
       pytorch_lightning.callbacks.LearningRateMonitor(
         logging_interval="epoch"
       ),
       pytorch_lightning.callbacks.EarlyStopping(
         monitor="val_loss", 
-        min_delta=0.000001, 
+        min_delta=1e-6, 
         patience=50, 
         verbose=False, 
         mode="min"
