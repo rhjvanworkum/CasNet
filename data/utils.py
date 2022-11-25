@@ -61,27 +61,24 @@ def sort_geometry_files_by_idx(geometry_files: List[str]) -> List[str]:
   sorted_files_with_idx = list(sorted(files_with_idx, key=lambda x: x[0]))
   return [file for _, file in sorted_files_with_idx]
 
+def get_pos_matrix(geom):
+  return np.array([[atom.x, atom.y, atom.z] for atom in geom])
+
+from tqdm import tqdm
+
 def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_file: str) -> List[str]:
   start_geometry = read_xyz_file(start_geometry_file)
   geometries = [read_xyz_file(file) for file in geometry_files]
-  selected_idxs = []
+  pos_matrices = [get_pos_matrix(geometry) for geometry in geometries]
+  indices = np.arange(len(geometry_files)).tolist()
   sorted_geometry_files = []
 
-  current_geometry = start_geometry
-  for iteration in range(len(geometry_files)):
-    distances = []
-    idxs = []
-
-    for idx, geometry in enumerate(geometries):
-      if idx not in selected_idxs:
-        distances.append(np.sum([np.linalg.norm(atom2.coordinates - atom1.coordinates) for atom1, atom2 in zip(geometry, current_geometry)]))
-        idxs.append(idx)
-
-    top_idx = np.argmin(distances)
-    selected_idx = idxs[top_idx]
-
-    selected_idxs.append(selected_idx)
-    current_geometry = geometries[selected_idx] 
+  current_geometry = get_pos_matrix(start_geometry)
+  for _ in tqdm(range(len(geometry_files)), total=len(geometry_files)):
+    distances = [np.sum(np.linalg.norm(pos_matrices[idx] - current_geometry)) for idx in indices]
+    selected_idx = indices[np.argmin(distances)]
+    indices.remove(selected_idx)
+    current_geometry = get_pos_matrix(geometries[selected_idx])
     sorted_geometry_files.append(geometry_files[selected_idx])
 
   return sorted_geometry_files
