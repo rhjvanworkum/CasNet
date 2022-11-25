@@ -45,4 +45,5 @@ necessary packages:
 - fasteners
 - torch_ema
 - hydra
+- wandb
 - pytorch_lightning
