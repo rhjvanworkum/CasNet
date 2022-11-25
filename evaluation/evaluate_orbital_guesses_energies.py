@@ -1,6 +1,5 @@
 from typing import List, Tuple
-from data.utils import find_all_geometry_files_in_folder, sort_geometry_files
-from evaluation.utils import compute_F_model_orbitals, compute_ao_min_orbitals, compute_casci_energy, compute_converged_casci_energy, compute_converged_casscf_orbitals, compute_huckel_orbitals, compute_mo_model_orbitals
+from data.utils import find_all_geometry_files_in_folder, sort_geometry_files_by_idx
 from pyscf import gto
 from pyscf.tools import molden
 import numpy as np
@@ -8,12 +7,8 @@ import argparse
 import os
 import matplotlib.pyplot as plt
 
-initial_guess_dict = {
-  'ao_min': compute_ao_min_orbitals,
-  'huckel': compute_huckel_orbitals,
-  'ML-MO': compute_mo_model_orbitals,
-  'ML-F': compute_F_model_orbitals,
-}
+from evaluation import initial_guess_dict, compute_casci_energy, compute_casscf_energy, compute_converged_casscf_orbitals
+
 
 def plot_mo_energies_errors(geometry_files: List[str],
                             method_name: str,
@@ -34,11 +29,12 @@ def print_casci_energies_errors(geometry_files: List[str],
                          model_path: str, 
                          basis: str) -> None:
   errors = []
-  for geometry_file in geometry_files:
-    e_conv = compute_converged_casci_energy(geometry_file, basis)
+  for idx, geometry_file in enumerate(geometry_files):
+    e_casscf = compute_casscf_energy(geometry_file, basis)
     _, mo = initial_guess_dict[method_name](model_path, geometry_file, basis)
-    e_cas = compute_casci_energy(geometry_file, mo , basis)
-    errors.append(np.abs(e_conv - e_cas))
+    e_casci = compute_casci_energy(geometry_file, mo , basis)
+    print(f'geometry {idx}, error: {np.abs(e_casscf - e_casci)}')
+    errors.append(np.abs(e_casscf - e_casci))
   print(f'Method {method_name} CASCI MAE: {np.mean(np.array(errors))} +/- {np.std(np.array(errors))} \n')
 
 if __name__ == "__main__":
@@ -49,28 +45,47 @@ if __name__ == "__main__":
   parser.add_argument('--split_name', type=str)
   parser.add_argument('--mo_model', type=str)
   parser.add_argument('--F_model', type=str)
+  parser.add_argument('--phisnet_model', type=str)
   parser.add_argument('--basis', type=str)
+  parser.add_argument('--all', type=bool)
   args = parser.parse_args()
 
   geometry_folder = base_dir + args.geometry_folder
   split_file = './data_storage/' + args.split_name
   mo_model = './checkpoints/' + args.mo_model + '.pt'
-  F_model = './checkpoints/' + args.F_model + '.pt'
+  f_model = './checkpoints/' + args.F_model + '.pt'
+  phisnet_model = './checkpoints/' + args.phisnet_model + '.pt'
   basis = args.basis
 
   geometry_files = find_all_geometry_files_in_folder(geometry_folder)
-  geometry_files = sort_geometry_files(geometry_files)
-  geometry_files = np.array(geometry_files)[np.load(split_file)['val_idx']]
+  geometry_files = sort_geometry_files_by_idx(geometry_files)
+  if args.all:
+    geometry_files = np.array(geometry_files)
+  else:
+    geometry_files = np.array(geometry_files)[np.load(split_file)['test_idx']]
 
   for key, method in initial_guess_dict.items():
-    model_path = ''
-    if key == 'ML-MO':
-      model_path = mo_model
+    if key == 'ao_min':
+      print_casci_energies_errors(geometry_files, key, None, basis)
+      # print('Calculating orbital energy differences.....\n')
+      # mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, key, None, basis)
+      # plt.plot(np.arange(len(mo_e_errors)), mo_e_errors, label=method_name)
+      # plt.show()
+    elif key == 'ML-MO':
+      print_casci_energies_errors(geometry_files, key, mo_model, basis)
+      # print('Calculating orbital energy differences.....\n')
+      # mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, key, mo_model, basis)
+      # plt.plot(np.arange(len(mo_e_errors)), mo_e_errors, label=method_name)
+      # plt.show()
     elif key == 'ML-F':
-      model_path = F_model
-    print_casci_energies_errors(geometry_files, key, model_path, basis)
-    mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, key, model_path, basis)
-    plt.plot(np.arange(len(mo_e_errors)), mo_e_errors, label=method_name)
-  
-  plt.savefig(f'results/{F_model}-{mo_model}_mo_e.png')
-
+      print_casci_energies_errors(geometry_files, key, f_model, basis)
+      # print('Calculating orbital energy differences.....\n')
+      # mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, key, f_model, basis)
+      # plt.plot(np.arange(len(mo_e_errors)), mo_e_errors, label=method_name)
+      # plt.show()
+    if key == 'phisnet':
+      print_casci_energies_errors(geometry_files, key, phisnet_model, basis)
+      # print('Calculating orbital energy differences.....\n')
+      # mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, key, phisnet_model, basis)
+      # plt.plot(np.arange(len(mo_e_errors)), mo_e_errors, label=method_name)
+      # plt.show()

@@ -13,4 +13,4 @@ export base_dir='/home/rhjvanworkum/'
 export WANDB_PROJECT='caschnet'
 
 # set PySCF OMP threads for parallelization
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=4

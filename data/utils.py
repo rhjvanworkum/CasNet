@@ -81,7 +81,7 @@ def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_fi
     current_geometry = get_pos_matrix(geometries[selected_idx])
     sorted_geometry_files.append(geometry_files[selected_idx])
 
-  return sorted_geometry_files
+  return sorted_geometry_files, selected_idxs
 
 def find_all_files_in_output_folder(output_folder: str) -> List[CasscfResult]:
   file_list = []

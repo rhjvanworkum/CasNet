@@ -5,7 +5,7 @@ from data.db_utils import xyz_to_db
 from ase.db import connect
 from typing import List, Tuple
 
-from data.utils import find_all_files_in_output_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_idx
+from data.utils import find_all_files_in_output_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_distance, sort_geometry_files_by_idx
 
 def phase_correct_orbitals(ref, target):
   ordered_target = target.copy()
@@ -17,21 +17,26 @@ def phase_correct_orbitals(ref, target):
   return ordered_target
 
 def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_path: str) -> None:
+  # gather files
   geometry_files = find_all_geometry_files_in_folder(geometry_folder)
   casscf_results = find_all_files_in_output_folder(output_folder)
   assert len(geometry_files) == len(casscf_results)
 
+  # sort files by index
   geometry_files = sort_geometry_files_by_idx(geometry_files)
   casscf_results = list(sorted(casscf_results, key=lambda x: x.index))
   
-  # phase_correct & sort orbitals
-  casscf_results[0].mo_coeffs_adjusted = casscf_results[0].mo_coeffs
-  for idx, casscf_result in enumerate(casscf_results):
-    if idx > 0:
-      casscf_result.mo_coeffs_adjusted = phase_correct_orbitals(ref=casscf_results[idx - 1].mo_coeffs_adjusted, 
-                                                                target=casscf_result.mo_coeffs)
+  # get geometry distance idxs
+  _, distance_idxs = sort_geometry_files_by_distance(geometry_files, '/home/ruard/Documents/experiments/fulvene/geometries/fulvene_geom_scan_250/geometry_0.xyz')  
 
-  
+  # phase_correct orbitals
+  for idx in range(len(distance_idxs)):
+    if idx == 0:
+      casscf_results[distance_idxs[idx]].mo_coeffs_adjusted = casscf_results[distance_idxs[idx]].mo_coeffs
+    else:
+      casscf_results[distance_idxs[idx]].mo_coeffs_adjusted = phase_correct_orbitals(ref=casscf_results[distance_idxs[idx - 1]].mo_coeffs_adjusted, 
+                                                                                     target=casscf_results[distance_idxs[idx]].mo_coeffs)
+
   # save geometry files & calculated properties
   for idx, geometry_file in enumerate(geometry_files):
     xyz_to_db(geometry_file,

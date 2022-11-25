@@ -8,26 +8,8 @@ import numpy as np
 from data.utils import find_all_geometry_files_in_folder, sort_geometry_files_by_idx
 from pyscf import mcscf, gto
 
+from evaluation import initial_guess_dict, run_casscf_calculation
 
-from evaluation.utils import compute_F_model_orbitals, compute_ao_min_orbitals, compute_mo_model_orbitals, compute_phisnet_model_orbitals
-
-def run_casscf_calculation(geometry_file: str,
-                           guess_orbitals: np.ndarray,
-                           basis='sto-6g'):
-  molecule = gto.M(atom=geometry_file,
-                   basis=basis,
-                   spin=0,
-                   symmetry=True)
-  molecule.verbose = 0
-
-  hartree_fock = molecule.RHF()
-  n_states = 2
-  weights = np.ones(n_states) / n_states
-  casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
-  casscf.conv_tol = 1e-8
-
-  conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeffs, mo_energies = casscf.kernel(guess_orbitals)
-  return conv, e_tot, imacro, imicro, iinner
 
 def evaluate_and_print_initial_guess_convergence(geometry_files: List[str],
                                                  model_path: str, 
@@ -55,32 +37,38 @@ def evaluate_and_print_initial_guess_convergence(geometry_files: List[str],
 if __name__ == "__main__":
   base_dir = os.environ['base_dir']
 
-  initial_guess_dict = {
-    # 'ao_min': compute_ao_min_orbitals,
-    # 'ML-MO': compute_mo_model_orbitals,
-    # 'ML-F': compute_F_model_orbitals,
-    'phisnet': compute_phisnet_model_orbitals
-  }
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--geometry_folder', type=str)
+  parser.add_argument('--split_name', type=str)
+  parser.add_argument('--mo_model', type=str)
+  parser.add_argument('--F_model', type=str)
+  parser.add_argument('--phisnet_model', type=str)
+  parser.add_argument('--basis', type=str)
+  parser.add_argument('--all', type=bool)
+  args = parser.parse_args()
 
-  geometry_folder = base_dir + 'geometries/fulvene_geom_scan_250/'
-  split_file = './data_storage/' + 'fulvene_gs_250_inter.npz'
-  basis = 'sto_6g'
-
-  MO_model = './checkpoints/' + 'fulvene_gs250_inter_MO' + '.pt'
-  F_model = './checkpoints/' + 'fulvene_gs250_inter_F' + '.pt'
-  phisnet_model = './checkpoints/' + 'fulvene_gs250_inter_phisnet' + '.pt'
+  geometry_folder = base_dir + args.geometry_folder
+  split_file = './data_storage/' + args.split_name
+  mo_model = './checkpoints/' + args.mo_model + '.pt'
+  f_model = './checkpoints/' + args.F_model + '.pt'
+  phisnet_model = './checkpoints/' + args.phisnet_model + '.pt'
+  basis = args.basis
 
   geometry_files = find_all_geometry_files_in_folder(geometry_folder)
   geometry_files = sort_geometry_files_by_idx(geometry_files)
-  geometry_files = np.array(geometry_files)[np.load(split_file)['val_idx']]
+  
+  if args.all:
+    geometry_files = np.array(geometry_files)
+  else:
+    geometry_files = np.array(geometry_files)[np.load(split_file)['test_idx']]
 
   for key, method in initial_guess_dict.items():
     if key == 'ao_min':
       evaluate_and_print_initial_guess_convergence(geometry_files, None, key, method, basis)
     elif key == 'ML-MO':
-      evaluate_and_print_initial_guess_convergence(geometry_files, MO_model, key, method, basis)
+      evaluate_and_print_initial_guess_convergence(geometry_files, mo_model, key, method, basis)
     elif key == 'ML-F':
-      evaluate_and_print_initial_guess_convergence(geometry_files, F_model, key, method, basis)
+      evaluate_and_print_initial_guess_convergence(geometry_files, f_model, key, method, basis)
     if key == 'phisnet':
       evaluate_and_print_initial_guess_convergence(geometry_files, phisnet_model, key, method, basis)
 
