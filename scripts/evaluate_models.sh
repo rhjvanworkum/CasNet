@@ -23,7 +23,7 @@ db_name=fulvene_md_250.db
 split_name=fulvene_md_250.npz
 mo_model=fulvene_md_250_MO
 f_model=fulvene_md_250_F
-phisnet_model=fulvene_md250_phisnet
+phisnet_model=fulvene_md250_phisnet_bigger_ortho
 basis=sto_6g
 
 # run evaluation scripts

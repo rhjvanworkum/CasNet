@@ -61,9 +61,9 @@ def compute_phisnet_model_orbitals(model_path: str,
 
 
 initial_guess_dict = {
-  'ao_min': compute_ao_min_orbitals,
-  'ML-MO': compute_mo_model_orbitals,
-  'ML-F': compute_F_model_orbitals,
+  # 'ao_min': compute_ao_min_orbitals,
+  # 'ML-MO': compute_mo_model_orbitals,
+  # 'ML-F': compute_F_model_orbitals,
   'phisnet': compute_phisnet_model_orbitals
 }
 
