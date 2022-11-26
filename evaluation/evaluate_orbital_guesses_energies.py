@@ -65,7 +65,7 @@ if __name__ == "__main__":
     geometry_files = np.array(geometry_files)[np.load(split_file)['test_idx']]
 
   for key, method in initial_guess_dict.items():
-    if key == 'ao_min':
+    if key == 'ao_min' or 'hartree-fock':
       print_casci_energies_errors(geometry_files, key, None, basis)
       # print('Calculating orbital energy differences.....\n')
       # mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, key, None, basis)

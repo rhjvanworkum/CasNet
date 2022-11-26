@@ -63,7 +63,7 @@ if __name__ == "__main__":
     geometry_files = np.array(geometry_files)[np.load(split_file)['test_idx']]
 
   for key, method in initial_guess_dict.items():
-    if key == 'ao_min':
+    if key == 'ao_min' or 'hartree-fock':
       evaluate_and_print_initial_guess_convergence(geometry_files, None, key, method, basis)
     elif key == 'ML-MO':
       evaluate_and_print_initial_guess_convergence(geometry_files, mo_model, key, method, basis)

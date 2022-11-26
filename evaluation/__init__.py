@@ -36,6 +36,17 @@ def compute_huckel_orbitals(model_path: str,
   mo_e, mo = scipy.linalg.eigh(F, S)
   return mo_e, mo
 
+def compute_hf_orbitals(model_path: str,
+                        geometry_path: str,
+                        basis: str) -> Tuple[np.ndarray, np.ndarray]:
+  molecule = gto.M(atom=geometry_path,
+                   basis=basis,
+                   spin=0,
+                   symmetry=True)
+  hartree_fock = molecule.RHF()
+  hartree_fock.kernel()
+  return hartree_fock.mo_energy, hartree_fock.mo_coeff
+
 def compute_mo_model_orbitals(model_path: str,
                               geometry_path: str,
                               basis: str):
@@ -62,6 +73,7 @@ def compute_phisnet_model_orbitals(model_path: str,
 
 initial_guess_dict = {
   # 'ao_min': compute_ao_min_orbitals,
+  # 'hartree-fock': compute_hf_orbitals,
   # 'ML-MO': compute_mo_model_orbitals,
   # 'ML-F': compute_F_model_orbitals,
   'phisnet': compute_phisnet_model_orbitals

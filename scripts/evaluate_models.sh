@@ -19,11 +19,11 @@ export PYTHONPATH
 # basis=sto_6g
 
 test_geometry_folder=geometries/fulvene_md_traj_25/
-db_name=fulvene_md_250.db
-split_name=fulvene_md_250.npz
+db_name=fulvene_s01.db
+split_name=fulvene_normal_1000.npz
 mo_model=fulvene_md_250_MO
 f_model=fulvene_md_250_F
-phisnet_model=fulvene_md250_phisnet_bigger_ortho
+phisnet_model=fulvene_s01_1000_phisnet
 basis=sto_6g
 
 # run evaluation scripts

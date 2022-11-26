@@ -109,7 +109,8 @@ def evaluate_phisnet_model_loss(model_path, db_path, split_path):
 
     model.eval()
     val_loss = calculate_loss(model, db_path, val_idx)
-    test_loss = calculate_loss(model, db_path, test_idx)
+    # test_loss = calculate_loss(model, db_path, test_idx)
+    test_loss = None
 
     return train_loss, val_loss, test_loss
 

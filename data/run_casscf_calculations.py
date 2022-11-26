@@ -58,7 +58,7 @@ def run_casscf_calculations(geometry_folder: str,
 
   files = find_all_geometry_files_in_folder(geometry_folder)    
   # files = sort_geometry_files_by_idx(files)
-  files = sort_geometry_files_by_distance(files, '/home/rhjvanworkum/geometry_0.xyz')   
+  files, _ = sort_geometry_files_by_distance(files, '/home/rhjvanworkum/geometry_0.xyz')   
   # print(len(files))  
       
   for file in tqdm(files, total=len(files)):

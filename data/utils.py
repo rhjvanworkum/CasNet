@@ -71,6 +71,7 @@ def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_fi
   geometries = [read_xyz_file(file) for file in geometry_files]
   pos_matrices = [get_pos_matrix(geometry) for geometry in geometries]
   indices = np.arange(len(geometry_files)).tolist()
+  selected_idxs = []
   sorted_geometry_files = []
 
   current_geometry = get_pos_matrix(start_geometry)
@@ -78,6 +79,7 @@ def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_fi
     distances = [np.sum(np.linalg.norm(pos_matrices[idx] - current_geometry)) for idx in indices]
     selected_idx = indices[np.argmin(distances)]
     indices.remove(selected_idx)
+    selected_idxs.append(selected_idx)
     current_geometry = get_pos_matrix(geometries[selected_idx])
     sorted_geometry_files.append(geometry_files[selected_idx])
 

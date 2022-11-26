@@ -1,9 +1,9 @@
 import numpy as np
 
 if __name__ == "__main__":  
-  name = 'fulvene_normal_200'
+  name = 'fulvene_normal_5000'
   save_path = './data_storage/' + name + '.npz'
-  n = 200
+  n = 5000
 
   train_split = 0.9
   val_split = 0.1

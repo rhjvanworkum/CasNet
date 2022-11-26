@@ -22,12 +22,15 @@ def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_
   casscf_results = find_all_files_in_output_folder(output_folder)
   assert len(geometry_files) == len(casscf_results)
 
+  # make sure all calculations are converged
+  assert False not in [result.converged for result in casscf_results]
+
   # sort files by index
   geometry_files = sort_geometry_files_by_idx(geometry_files)
   casscf_results = list(sorted(casscf_results, key=lambda x: x.index))
   
   # get geometry distance idxs
-  _, distance_idxs = sort_geometry_files_by_distance(geometry_files, '/home/ruard/Documents/experiments/fulvene/geometries/fulvene_geom_scan_250/geometry_0.xyz')  
+  _, distance_idxs = sort_geometry_files_by_distance(geometry_files, '/home/rhjvanworkum/geometries/fulvene_geom_scan_250/geometry_0.xyz')  
 
   # phase_correct orbitals
   for idx in range(len(distance_idxs)):

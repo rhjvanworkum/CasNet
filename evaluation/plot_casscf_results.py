@@ -1,4 +1,7 @@
 """
+Script to plot smoothness of Fock / MO matrix elements
+
+
 example usage: python evaluation/plot_casscf_results.py --output_folder pyscf/fulvene_geom_scan_250/ --db_name fulvene_geom_scan_250.db
 """
 
