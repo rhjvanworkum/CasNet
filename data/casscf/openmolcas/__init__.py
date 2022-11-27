@@ -7,4 +7,4 @@ def get_guess_orb_file(basis: str):
     return f'./data/files/orb_{basis}.orb'
 
 def get_seward_input_file(basis: str) -> str:
-    return f'./data_storage/seward_{basis}.input'
+    return f'./data/files/seward_{basis}.input'

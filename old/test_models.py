@@ -2,7 +2,7 @@ import os
 from typing import List
 import argparse
 import numpy as np
-from data.save_casscf_calculations_to_db import get_orbital_order
+from data.db.save_casscf_calculations_to_db import get_orbital_order
 from pyscf import gto, mcscf, scf
 from functools import reduce
 from ase.db import connect

@@ -10,5 +10,5 @@ split_name=fulvene_gs_250_inter.npz
 phisnet_model=fulvene_gs250_molcas_phisnet
 basis=ANO-S-MB
 
-python openmolcas/evaluation/evaluate_model_loss.py --db_name $db_name --split_name $split_name --phisnet_model $phisnet_model
-python openmolcas/evaluation/evaluate_orbital_guess_convergence.py --geometry_folder $test_geometry_folder --output_folder $output_folder --split_name $split_name --phisnet_model $phisnet_model --basis $basis
+# python evaluation/openmolcas/evaluate_model_loss.py --db_name $db_name --split_name $split_name --phisnet_model $phisnet_model
+python evaluation/openmolcas/evaluate_orbital_guess_convergence.py --geometry_folder $test_geometry_folder --output_folder $output_folder --split_name $split_name --phisnet_model $phisnet_model --basis $basis
