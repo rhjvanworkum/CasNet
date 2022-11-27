@@ -1,0 +1,5 @@
+&GATEWAY
+	coord=geom.xyz
+	basis=ANO-S-MB
+	group=NoSym
+&SEWARD

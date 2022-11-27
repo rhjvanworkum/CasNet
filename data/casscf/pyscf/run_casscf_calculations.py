@@ -1,18 +1,18 @@
 
-import multiprocessing
 import os
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import argparse
 import numpy as np
 from pyscf import gto, mcscf
 from tqdm import tqdm
-from functools import reduce
 
-from data.utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_idx, sort_geometry_files_by_distance
+from data.casscf import EQUILIBRIUM_GEOMETRY_PATH
+from data.utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_distance
+
 
 def run_fulvene_casscf_calculation(geometry_xyz_file_path: str, 
                                    basis: str = 'sto_6g',
-                                   guess_mos: Optional[np.ndarray] = None):
+                                   guess_mos: Optional[np.ndarray] = None) -> Tuple[CasscfResult, np.ndarray]:
   molecule = gto.M(atom=geometry_xyz_file_path,
                    basis=basis,
                    spin=0,
@@ -47,6 +47,7 @@ def run_fulvene_casscf_calculation(geometry_xyz_file_path: str,
     imacro=imacro,
   ), mo_coeffs
 
+
 def run_casscf_calculations(geometry_folder: str, 
                             output_folder: str,
                             basis: str) -> None:
@@ -57,9 +58,7 @@ def run_casscf_calculations(geometry_folder: str,
   guess_mos = None
 
   files = find_all_geometry_files_in_folder(geometry_folder)    
-  # files = sort_geometry_files_by_idx(files)
-  files, _ = sort_geometry_files_by_distance(files, '/home/rhjvanworkum/geometry_0.xyz')   
-  # print(len(files))  
+  files, _ = sort_geometry_files_by_distance(files, EQUILIBRIUM_GEOMETRY_PATH)   
       
   for file in tqdm(files, total=len(files)):
     calculation_name = file.split('/')[-1].split('.')[0]
@@ -68,6 +67,7 @@ def run_casscf_calculations(geometry_folder: str,
     calculation_result.store_as_npz(output_folder + calculation_name + '.npz')
   
   print('Done')
+
 
 if __name__ == "__main__":
   base_dir = os.environ['base_dir']

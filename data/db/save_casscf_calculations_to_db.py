@@ -1,10 +1,11 @@
 import os
 import argparse
 import numpy as np
-from data.db_utils import xyz_to_db
 from ase.db import connect
 from typing import List, Tuple
 
+from data.casscf import EQUILIBRIUM_GEOMETRY_PATH
+from data.db.utils import xyz_to_db
 from data.utils import find_all_files_in_output_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_distance, sort_geometry_files_by_idx
 
 def phase_correct_orbitals(ref, target):
@@ -30,7 +31,7 @@ def save_casscf_calculations_to_db(geometry_folder: str, output_folder: str, db_
   casscf_results = list(sorted(casscf_results, key=lambda x: x.index))
   
   # get geometry distance idxs
-  _, distance_idxs = sort_geometry_files_by_distance(geometry_files, '/home/rhjvanworkum/geometries/fulvene_geom_scan_250/geometry_0.xyz')  
+  _, distance_idxs = sort_geometry_files_by_distance(geometry_files, EQUILIBRIUM_GEOMETRY_PATH)  
 
   # phase_correct orbitals
   for idx in range(len(distance_idxs)):

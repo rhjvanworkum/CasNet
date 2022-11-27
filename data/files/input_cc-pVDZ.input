@@ -1,0 +1,13 @@
+&GATEWAY
+	coord=geom.xyz
+	basis=cc-pVDZ
+	group=NoSym
+&SEWARD
+&RASSCF
+	fileorb=geom.orb
+	outorbitals=canonical
+	spin=1
+	nactel=6 0 0
+	inactive=18
+	ras2=6
+	ciroot=2 2 1

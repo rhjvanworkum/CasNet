@@ -1,22 +1,7 @@
 #!/bin/bash
-
 # don't forget to set the --all flag for md trajs
 
-# load dirs
 source env.sh
-
-# set python path
-PYTHONPATH="/home/rhjvanworkum/caschnet/:/home/rhjvanworkum/schnetpack/src/:$PYTHONPATH"
-export PYTHONPATH
-
-# variables
-# test_geometry_folder=geometries/fulvene_geom_scan_250/
-# db_name=fulvene_geom_scan_250.db
-# split_name=fulvene_gs_250.npz
-# mo_model=fulvene_gs250_MO
-# f_model=fulvene_gs250_F
-# phisnet_model=fulvene_gs250_phisnet
-# basis=sto_6g
 
 test_geometry_folder=geometries/fulvene_md_traj_25/
 db_name=fulvene_s01.db

@@ -1,0 +1,1 @@
+EQUILIBRIUM_GEOMETRY_PATH = './data/files/equilibrium.xyz'

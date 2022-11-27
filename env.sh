@@ -7,7 +7,7 @@ PYSCF_EXT_PATH="/home/ubuntu/anaconda3/envs/caschnet/lib/python3.8/site-packages
 export PYSCF_EXT_PATH
 
 # set files base dir
-export base_dir='/home/rhjvanworkum/'
+export base_dir='/home/ruard/Documents/experiments/fulvene/'
 
 # set WANDB project for training logs
 export WANDB_PROJECT='caschnet'

@@ -1,7 +1,13 @@
-from operator import itemgetter
 from typing import List
 import numpy as np
 import os
+from tqdm import tqdm
+
+"""
+
+Utils for saving CASSCF calculation results
+
+"""
 
 class CasscfResult:
   """
@@ -61,10 +67,9 @@ def sort_geometry_files_by_idx(geometry_files: List[str]) -> List[str]:
   sorted_files_with_idx = list(sorted(files_with_idx, key=lambda x: x[0]))
   return [file for _, file in sorted_files_with_idx]
 
+
 def get_pos_matrix(geom):
   return np.array([[atom.x, atom.y, atom.z] for atom in geom])
-
-from tqdm import tqdm
 
 def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_file: str) -> List[str]:
   start_geometry = read_xyz_file(start_geometry_file)
@@ -85,17 +90,27 @@ def sort_geometry_files_by_distance(geometry_files: List[str], start_geometry_fi
 
   return sorted_geometry_files, selected_idxs
 
+
 def find_all_files_in_output_folder(output_folder: str) -> List[CasscfResult]:
   file_list = []
   for _, _, files in os.walk(output_folder):
     for file in files:
-      file_list.append(output_folder + file)
+      if '.npz' in file:
+        file_list.append(output_folder + file)
   return  [CasscfResult.load_from_npz(file) for file in file_list]
 
 
 def check_and_create_folder(folder):
   if not os.path.exists(folder):
     os.makedirs(folder)
+
+
+"""
+
+Utils for writing / reading geometries
+
+"""
+
 
 class Atom:
   def __init__(self, type, x, y, z) -> None:
@@ -107,6 +122,7 @@ class Atom:
   @property
   def coordinates(self):
     return np.array([self.x, self.y, self.z])
+
 
 def write_xyz_file(atoms: List[Atom], filename: str):
   with open(filename, 'w') as f:
@@ -124,6 +140,7 @@ def write_xyz_file(atoms: List[Atom], filename: str):
       f.write('\n')
     
     f.write('\n')
+
 
 def read_xyz_file(filename):
   atoms = []

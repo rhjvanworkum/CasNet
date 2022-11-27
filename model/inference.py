@@ -1,28 +1,14 @@
-from typing import Tuple, Any
 import numpy as np
 import torch
 import schnetpack as spk
 from ase import io
-import scipy
-import scipy.linalg
-from pyscf import gto
 
 from data.utils import read_xyz_file
 from phisnet_fork.utils.transform_hamiltonians import transform_hamiltonians_from_lm_to_ao
-from phisnet_fork.utils.custom_data_module import CustomDataModule
-from phisnet_fork.utils.phisnet import PhisNet
-from phisnet_fork.train import load_model
-
-def calculate_overlap_matrix(geometry_path: str, basis: str) -> np.ndarray:
-  mol = gto.M(atom=geometry_path,
-              basis=basis,
-              spin=0)
-  myscf = mol.RHF()
-  return myscf.get_ovlp(mol)
 
 def infer_orbitals_from_phisnet_model(model_path: str, 
                                       geometry_path: str,
-                                      basis: str = 'sto_6g') -> Tuple[np.ndarray, np.ndarray]:
+                                      orbital_convention: str = 'fulvene_minimal_basis') -> np.ndarray:
   use_gpu = torch.cuda.is_available()
   if use_gpu:
     device = torch.device('cuda')
@@ -45,17 +31,12 @@ def infer_orbitals_from_phisnet_model(model_path: str,
   orbital_convention = 'fulvene_minimal_basis'
   F = transform_hamiltonians_from_lm_to_ao(F, atoms=atoms, convention=orbital_convention)
 
-  # F -> MO coeffs
-  S = calculate_overlap_matrix(geometry_path, basis)
-  mo_e, mo = scipy.linalg.eigh(F, S)
-  return mo_e, mo
+  return F
   
-
 def infer_orbitals_from_F_model(model_path: str, 
                                 geometry_path: str,
-                                basis: str = 'sto_6g', 
                                 basis_set_size: int = 36,
-                                cutoff=5.0) -> Tuple[np.ndarray, np.ndarray]:
+                                cutoff=5.0) -> np.ndarray:
   if torch.cuda.is_available():
     device = torch.device('cuda')
   else:
@@ -76,18 +57,13 @@ def infer_orbitals_from_F_model(model_path: str,
   F = values.reshape(basis_set_size, basis_set_size)
   F = 0.5 * (F + F.T)
 
-  S = calculate_overlap_matrix(geometry_path, basis)
+  return F
 
-  # F -> MO coeffs
-  mo_e, mo = scipy.linalg.eigh(F, S)
-
-  return mo_e, mo
 
 def infer_orbitals_from_mo_model(model_path: str, 
                                 geometry_path: str,
-                                basis: str = 'sto_6g', 
                                 basis_set_size: int = 36,
-                                cutoff=5.0) -> Tuple[np.ndarray, np.ndarray]:
+                                cutoff=5.0) -> np.ndarray:
   if torch.cuda.is_available():
     device = torch.device('cuda')
   else:
@@ -108,6 +84,5 @@ def infer_orbitals_from_mo_model(model_path: str,
     if key in output.keys():
       values = output[key].detach().cpu().numpy()
       mo = values.reshape(basis_set_size, basis_set_size)
-      mo_e = np.zeros(len(mo))
       mo = np.asarray(mo.tolist(), order='C')
-      return mo_e, mo
+      return mo

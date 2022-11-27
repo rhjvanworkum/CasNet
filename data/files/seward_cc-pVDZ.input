@@ -1,0 +1,5 @@
+&GATEWAY
+	coord=geom.xyz
+	basis=cc-pVDZ
+	group=NoSym
+&SEWARD
