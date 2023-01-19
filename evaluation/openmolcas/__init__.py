@@ -7,17 +7,19 @@ from typing import Tuple
 import scipy
 import scipy.linalg
 
-from model.inference import infer_orbitals_from_phisnet_model
+from model.inference import infer_orbitals_from_phisnet_model, infer_orbitals_from_F_model
 from data.utils import read_xyz_file
 from phisnet_fork.utils.transform_hamiltonians import transform_hamiltonians_from_lm_to_ao
 from data.casscf.openmolcas import get_seward_input_file, MOLCAS_PATH
 # from openmolcas.utils import *
 
 basis_dict = {
-    'ANO-S-MB': 36
+    'ANO-S-MB': 36,
+    'cc-pVDZ': 114
 }
 convention = {
-    'ANO-S-MB': 'fulvene_minimal_basis'
+    'ANO-S-MB': 'fulvene_minimal_basis',
+    'cc-pVDZ': 'fulvene_cc-pVDZ'
 }
 
 """
@@ -90,6 +92,15 @@ def compute_huckel_orbitals(base_path: str,
 
     return mo_e, mo
 
+def compute_f_model_orbitals(base_path: str,
+                                   model_path: str, 
+                                   geometry_path: str,
+                                   basis: str = 'sto_6g') -> Tuple[np.ndarray, np.ndarray]:
+    F = infer_orbitals_from_F_model(model_path, geometry_path, basis_dict[basis])
+    S = calculate_overlap_matrix(base_path, geometry_path, basis)
+    mo_e, mo = scipy.linalg.eigh(F, S, driver='gvd')
+    return mo_e, mo.T
+
 def compute_phisnet_model_orbitals(base_path: str,
                                    model_path: str, 
                                    geometry_path: str,
@@ -97,10 +108,11 @@ def compute_phisnet_model_orbitals(base_path: str,
     orbital_convention = convention[basis]
     F = infer_orbitals_from_phisnet_model(model_path, geometry_path, orbital_convention)
     S = calculate_overlap_matrix(base_path, geometry_path, basis)
-    mo_e, mo = scipy.linalg.eigh(F, S)
+    mo_e, mo = scipy.linalg.eigh(F, S, driver='gvd')
     return mo_e, mo.T
 
 initial_guess_dict = {
-  'huckel': compute_huckel_orbitals,
+#   'huckel': compute_huckel_orbitals,
+#   'f_model': compute_f_model_orbitals,
   'phisnet': compute_phisnet_model_orbitals
 }

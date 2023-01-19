@@ -84,23 +84,23 @@ def train_model(
         mode="min"
       )
   ]
-  
-  epochs = 1000
+
+  args = {
+    'callbacks': callbacks,
+    'default_root_dir': './test/',
+    'max_epochs': epochs,
+    'devices': 1
+  }
+
+  if torch.cuda.is_available():
+    args['accelerator'] = 'gpu'
 
   if use_wandb:
     wandb_project = os.environ['WANDB_PROJECT']
     logger = WandbLogger(project=wandb_project)
-    trainer = pytorch_lightning.Trainer(callbacks=callbacks, 
-                                        logger=logger,
-                                        default_root_dir='./test/',
-                                        max_epochs=epochs,
-                                        accelerator='gpu',
-                                        devices=1)
-  else:
-    trainer = pytorch_lightning.Trainer(callbacks=callbacks, 
-                                    default_root_dir='./test/',
-                                    max_epochs=epochs,
-                                    accelerator='gpu',
-                                    devices=1)
+    args['logger'] = logger
+
+  trainer = pytorch_lightning.Trainer(**args)
+
   logging.info("Start training")
   trainer.fit(model, datamodule=dataset)

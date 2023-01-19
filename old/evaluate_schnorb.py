@@ -7,7 +7,7 @@ Temp script to evaluate SchNorb predictions
 import numpy as np
 import scipy
 import scipy.linalg
-from evaluation.evaluate_orbital_guesses_convergence import run_casscf_calculation
+from evaluation.pyscf.evaluate_orbital_guesses_convergence import run_casscf_calculation
 from evaluation.utils import compute_casci_energy, compute_converged_casci_energy, compute_converged_casscf_orbitals
 import matplotlib.pyplot as plt
 

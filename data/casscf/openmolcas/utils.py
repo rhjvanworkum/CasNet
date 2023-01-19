@@ -18,10 +18,15 @@ def read_log_file(file, read_iterations=True):
               break
 
       if "--- Module rasscf spent" in line:
+        times = []
         for el in line.split():
           if el.isdigit():
-            rasscf_timing = float(el)
-            break
+            times.append(float(el))
+
+        if len(times) == 1:
+          rasscf_timing = times[0]
+        elif len(times) == 2:
+          rasscf_timing = 60 * times[0] + times[1]
 
       if "Timing: Wall" in line:
         wall_timing = float(line.replace("=", " ").split()[2])

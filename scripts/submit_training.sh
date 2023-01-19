@@ -1,11 +1,11 @@
 #!/bin/bash
 
-export WANDB_PROJECT='caschnet'
+export WANDB_PROJECT='mo_coeff_test'
 
 PYTHONPATH="/home/rhjvanworkum/caschnet/:/home/rhjvanworkum/schnetpack/src/:$PYTHONPATH"
 export PYTHONPATH
 
 
-# python train_model.py --db_name fulvene_md_250.db --split_name fulvene_md_250.npz --property F --model_name fulvene_md_250_F_bigger
+python train_model.py --db_name fulvene_s005.db --split_name fulvene_normal_5000.npz --property F --model_name testje
 
-python phisnet_fork/train.py @phisnet_fork/configurations/fulvene_gs250_cc-pVDZ_molcas.txt
+# python phisnet_fork/train.py @phisnet_fork/configurations/fulvene_gs250_cc-pVDZ_molcas.txt

@@ -13,7 +13,7 @@ import h5py
 from data.casscf import EQUILIBRIUM_GEOMETRY_PATH
 from data.casscf.openmolcas import MOLCAS_PATH, get_guess_orb_file, get_input_file
 from data.utils import CasscfResult, check_and_create_folder, find_all_geometry_files_in_folder, sort_geometry_files_by_distance
-from openmolcas.utils import *
+from data.casscf.openmolcas.utils import *
 
 
 def run_fulvene_casscf_calculation(geometry_xyz_file_path: str, 

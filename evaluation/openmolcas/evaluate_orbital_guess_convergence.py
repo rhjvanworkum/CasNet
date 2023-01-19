@@ -14,7 +14,7 @@ def run_casscf_calculation(geometry_xyz_file_path: str,
                            guess_orbs: np.ndarray,
                            base_path: str,
                            index: int,
-                           basis: str = 'ANO-S-MB') -> int:
+                           basis: str) -> int:
     # make dir
     dir_path = f'{base_path}/calculation_{index}/'
     if not os.path.exists(dir_path):
@@ -49,6 +49,17 @@ def evaluate_and_print_initial_guess_convergence(geometry_files: List[str],
   n_its, rasscf_ts, wall_ts = [], [], []
   for idx, geometry_file in enumerate(geometry_files):
     _, mo = method(output_folder, model_path, geometry_file, basis)
+    
+    # from ase.db import connect
+    # import scipy
+    # import scipy.linalg
+    # index = int(geometry_file.split('/')[-1].split('.')[0].split('_')[-1])
+    # db_path = './data_storage/fulvene_gs_250_cc-pVDZ.db'
+    # with connect(db_path) as conn:
+    #   F = conn.get(int(index) + 1).data['F'].reshape(114, 114)
+    #   S = conn.get(int(index) + 1).data['S'].reshape(114, 114)
+    # mo_e, mo = scipy.linalg.eigh(F, S, driver='gvd')
+    # mo = mo.T
 
     rasscf_t, wall_t, n_it = run_casscf_calculation(geometry_xyz_file_path=geometry_file,
                                                                       guess_orbs=mo,
@@ -73,6 +84,7 @@ if __name__ == "__main__":
   parser.add_argument('--output_folder', type=str)
   parser.add_argument('--split_name', type=str)
   parser.add_argument('--phisnet_model', type=str)
+  parser.add_argument('--f_model', type=str)
   parser.add_argument('--basis', type=str)
   parser.add_argument('--all', type=bool)
   args = parser.parse_args()
@@ -80,6 +92,7 @@ if __name__ == "__main__":
   geometry_folder = base_dir + args.geometry_folder
   output_folder = base_dir + args.output_folder
   split_file = './data_storage/' + args.split_name
+  f_model = './checkpoints/' + args.f_model + '.pt'
   phisnet_model = './checkpoints/' + args.phisnet_model + '.pt'
   basis = args.basis
 

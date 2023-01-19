@@ -21,14 +21,12 @@ def infer_orbitals_from_phisnet_model(model_path: str,
   geometry = read_xyz_file(geometry_path)
   R = np.array([[atom.x, atom.y, atom.z] for atom in geometry]) * 1.8897261258369282 # convert angstroms to bohr
   R = torch.stack([torch.tensor(R, dtype=torch.float32)]).to(device)
-  output = model(R=R)
-  F = output['full_hamiltonian'][0].detach().cpu().numpy()
+  F = model(R=R)['full_hamiltonian'][0].detach().cpu().numpy()
     
   # sort fock matrix back
   atoms = ''
   for atom in geometry:
     atoms += atom.type
-  orbital_convention = 'fulvene_minimal_basis'
   F = transform_hamiltonians_from_lm_to_ao(F, atoms=atoms, convention=orbital_convention)
 
   return F
