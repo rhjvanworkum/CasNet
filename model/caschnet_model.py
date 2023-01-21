@@ -73,10 +73,10 @@ def create_orbital_model(loss_function: Callable,
         outputs=[output],
         optimizer_cls=torch.optim.Adam,
         optimizer_args={"lr": lr},
-        # scheduler_cls=torch.optim.lr_scheduler.ReduceLROnPlateau,
-        # scheduler_args={'threshold': 1e-6, 'patience': 5},
-        scheduler_cls=NoamLR,
-        scheduler_args={'warmup_steps': 25},
+        scheduler_cls=torch.optim.lr_scheduler.ReduceLROnPlateau,
+        scheduler_args={'threshold': 1e-6, 'patience': 5},
+        # scheduler_cls=NoamLR,
+        # scheduler_args={'warmup_steps': 25},
         scheduler_monitor='val_loss'
     )
 

@@ -3,7 +3,7 @@ PYTHONPATH="/home/ruard/code/caschnet/:/home/ruard/code/schnetpack/src/:/home/ru
 export PYTHONPATH
 
 # include PySCF path
-PYSCF_EXT_PATH="/home/ubuntu/anaconda3/envs/caschnet/lib/python3.8/site-packages/pyscf"
+PYSCF_EXT_PATH="/home/ruard/anaconda3/envs/caschnet/lib/python3.8/site-packages/pyscf"
 export PYSCF_EXT_PATH
 
 # set files base dir
@@ -13,4 +13,4 @@ export base_dir='/home/ruard/Documents/experiments/fulvene/'
 export WANDB_PROJECT='caschnet'
 
 # set PySCF OMP threads for parallelization
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=2
