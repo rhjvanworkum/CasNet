@@ -88,7 +88,7 @@ def evaluate_phisnet_model_loss(model_path, db_path, split_path):
                     atom_symbols += atom.symbol
 
             pred = model(R=R)['full_hamiltonian'][0].detach().cpu().numpy()
-            orbital_convention = 'fulvene_minimal_basis'
+            orbital_convention = 'fulvene_cc-pVDZ'
             pred = transform_hamiltonians_from_lm_to_ao(pred, atoms=atom_symbols, convention=orbital_convention)
             pred = pred.reshape(-1)
             loss += np.sum((pred - target)**2)
