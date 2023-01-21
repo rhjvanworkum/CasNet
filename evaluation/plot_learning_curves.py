@@ -1,30 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-""" STO-6G """
+# """ STO-6G """
 # macro_iterations = {
 #     'ao-min': (7.69, 1.22),
 #     'hartree-fock': (7.04, 1.25),
 #     's005': [(7.08, 1.83), (5.4, 1.33), (5.28, 1.48)],
-#     's01': [(5.24, 1.36), (5.24, 1.36), (5.04, 1.28)]
+#     's01': [(5.24, 1.36), (4.88, 1.37), (5.04, 1.28)]
 # }
 # micro_iterations = {
 #     'ao-min': (26.2, 4.66),
 #     'hartree-fock': (23.52, 4.60),
 #     's005': [(23.52, 4.60), (17.36, 5.25), (16.72, 5.52)],
-#     's01': [(16.68, 7.27), (16.68, 7.27), (15.64, 4.95)]
+#     's01': [(16.68, 7.27), (15.36, 5.39), (15.64, 4.95)]
 # }
 # inner_iterations = {
 #     'ao-min': (112.48, 23.37),
 #     'hartree-fock': (100.88, 24.53),
 #     's005': [(101.72, 35.68), (68.52, 28.23), (65.4, 27.68)],
-#     's01': [(65.12, 26.29), (65.12, 26.29), (59.04, 24.9)]
+#     's01': [(65.12, 26.29), (59.24, 26.77), (59.04, 24.9)]
 # }
 # casci_error = {
 #     'ao-min': (0.14, 0.02),
 #     'hartree-fock': (0.085, 0.026),
 #     's005': [(0.14, 0.08), (0.056, 0.032), (0.048, 0.028)],
-#     's01': [(0.05, 0.025), (0.05, 0.025), (0.035, 0.024)]
+#     's01': [(0.05, 0.025), (0.038, 0.025), (0.035, 0.024)]
 # }
 
 """ cc-pVDZ """
@@ -47,10 +47,10 @@ inner_iterations = {
     's01': [(639.72, 152.75), (603.12, 136.67), (308.36, 231.93)]
 }
 casci_error = {
-    # 'ao-min': (0.14, 0.02),
-    # 'hartree-fock': (0.085, 0.026),
-    # 's005': [(0.14, 0.08), (0.056, 0.032), (0.048, 0.028)],
-    # 's01': [(0.05, 0.025), (0.05, 0.025), (0.035, 0.024)]
+    'ao-min': (0.15, 0.2),
+    'hartree-fock': (0.09, 0.013),
+    's005': [(10.68, 3.64), (12.37, 3.28), (7.79, 2.86)],
+    's01': [(8.33, 3.08), (6.76, 2.73), (1.76, 1.96)]
 }
 
 
@@ -72,6 +72,7 @@ if __name__ == "__main__":
                     ls='--',
                     color='red')
     axs[0, 0].set_xscale('log')
+    # axs[0, 0].set_yscale('log')
     axs[0, 0].set_xlim([100, 6000])
     axs[0, 0].set_title('Macro iterations')
 
@@ -91,6 +92,7 @@ if __name__ == "__main__":
                     ls='--',
                     color='red')
     axs[0, 1].set_xscale('log')
+    # axs[0, 1].set_yscale('log')
     axs[0, 1].set_xlim([100, 6000])
     axs[0, 1].set_title('Micro iterations')
 
@@ -110,6 +112,7 @@ if __name__ == "__main__":
                     ls='--',
                     color='red')
     axs[1, 0].set_xscale('log')
+    # axs[1, 0].set_yscale('log')
     axs[1, 0].set_xlim([100, 6000])
     axs[1, 0].set_title('Inner iterations')
 
@@ -132,6 +135,7 @@ if __name__ == "__main__":
                     ls='--',
                     color='red')
     axs[1, 1].set_xscale('log')
+    # axs[1, 1].set_yscale('log')
     axs[1, 1].set_xlim([100, 6000])
     axs[1, 1].set_title('Casci error (Ha)')
 
@@ -140,4 +144,4 @@ if __name__ == "__main__":
         labels=['ao-min', 'hartree-fock', 's005-phisnet', 's01-phisnet'],
         loc='upper right', bbox_to_anchor=(1.2, 1)
     )
-    plt.savefig('test.png')
+    plt.show()

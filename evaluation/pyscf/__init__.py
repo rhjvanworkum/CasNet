@@ -1,4 +1,5 @@
 from typing import Tuple
+from evaluation import compute_cas_orb_energies_from_mo
 from model.inference import infer_orbitals_from_F_model, infer_orbitals_from_mo_model, infer_orbitals_from_phisnet_model
 from pyscf import gto, scf, mcscf
 import numpy as np
@@ -58,27 +59,40 @@ Fn's to compute orbitals using different methods
 """
 
 
-def compute_ao_min_orbitals(model_path: str,
-                            geometry_path: str,
-                            basis: str) -> Tuple[np.ndarray, np.ndarray]:
+def compute_ao_min_orbitals(
+  model_path: str,
+  geometry_path: str,
+  basis: str,
+  compute_cas_orb_e: bool = False
+) -> Tuple[np.ndarray, np.ndarray]:
   molecule = gto.M(atom=geometry_path,
                    basis=basis,
                    spin=0,
                    symmetry=True)
+  molecule.verbose = 0
   myscf = molecule.RHF()
   guess_dm = scf.hf.init_guess_by_minao(molecule)
   S = myscf.get_ovlp(molecule)
   F = myscf.get_fock(dm=guess_dm)
   mo_e, mo = scipy.linalg.eigh(F, S)
+
+  if compute_cas_orb_e:
+    mo_e = compute_cas_orb_energies_from_mo(geometry_path, basis, mo)
+  else:
+    mo_e = mo_e
+
   return mo_e, mo
   
-def compute_huckel_orbitals(model_path: str,
-                            geometry_path: str,
-                            basis: str) -> Tuple[np.ndarray, np.ndarray]:
+def compute_huckel_orbitals(
+  model_path: str,
+  geometry_path: str,
+  basis: str
+) -> Tuple[np.ndarray, np.ndarray]:
   molecule = gto.M(atom=geometry_path,
                    basis=basis,
                    spin=0,
                    symmetry=True)
+  molecule.verbose = 0
   myscf = molecule.RHF()
   guess_dm = scf.hf.init_guess_by_huckel(molecule)
   S = myscf.get_ovlp(molecule)
@@ -93,6 +107,7 @@ def compute_hf_orbitals(model_path: str,
                    basis=basis,
                    spin=0,
                    symmetry=True)
+  molecule.verbose = 0
   hartree_fock = molecule.RHF()
   hartree_fock.kernel()
   return hartree_fock.mo_energy, hartree_fock.mo_coeff
@@ -104,6 +119,7 @@ def compute_casscf_orbitals(model_path: str,
                    basis=basis,
                    spin=0,
                    symmetry=True)
+  molecule.verbose = 0
 
   hartree_fock = molecule.RHF()
   hartree_fock.kernel()
@@ -118,12 +134,20 @@ def compute_casscf_orbitals(model_path: str,
   conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeff, mo_e = casscf.kernel(mo)
   return mo_e, mo_coeff
 
-def compute_mo_model_orbitals(model_path: str,
-                              geometry_path: str,
-                              basis: str):
+def compute_mo_model_orbitals(
+  model_path: str,
+  geometry_path: str,
+  basis: str,
+  compute_cas_orb_e: bool = False
+) -> Tuple[np.ndarray, np.ndarray]:
   basis_set_size = basis_dict[basis]
   mo = infer_orbitals_from_mo_model(model_path, geometry_path, basis_set_size)
-  return np.zeros(len(mo)), mo
+
+  if compute_cas_orb_e:
+    mo_e = compute_cas_orb_energies_from_mo(geometry_path, basis, mo)
+  else:
+    mo_e = np.zeros(len(mo))
+  return mo_e, mo
 
 def compute_F_model_orbitals(model_path: str,
                              geometry_path: str,
@@ -146,6 +170,7 @@ def compute_phisnet_model_orbitals(model_path: str,
 initial_guess_dict = {
   'ao_min': compute_ao_min_orbitals,
   'hartree-fock': compute_hf_orbitals,
+  'casscf': compute_casscf_orbitals,
   'ML-MO': compute_mo_model_orbitals,
   'ML-F': compute_F_model_orbitals,
   'phisnet': compute_phisnet_model_orbitals

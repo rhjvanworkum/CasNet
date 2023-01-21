@@ -54,9 +54,11 @@ def compute_converged_casscf_orbitals(model_path: str,
   return mo_energies, mo_coeffs
 
 
-def compute_casci_energy(geometry_path: str,
-                         orbitals: np.ndarray,
-                         basis: str) -> float: 
+def compute_casci_energy(
+  geometry_path: str,
+  orbitals: np.ndarray,
+  basis: str
+) -> float: 
   molecule = gto.M(atom=geometry_path,
                    basis=basis,
                    spin=0,
@@ -74,8 +76,10 @@ def compute_casci_energy(geometry_path: str,
   return output[0]
 
 
-def compute_casscf_energy(geometry_path: str,
-                                   basis: str) -> float: 
+def compute_casscf_energy(
+  geometry_path: str,
+  basis: str
+) -> float: 
   molecule = gto.M(atom=geometry_path,
                    basis=basis,
                    spin=0,
@@ -84,7 +88,6 @@ def compute_casscf_energy(geometry_path: str,
 
   hartree_fock = molecule.RHF()
   hartree_fock.kernel()
-  S = hartree_fock.get_ovlp(molecule)
 
   n_states = N_STATES
   weights = np.ones(n_states) / n_states
@@ -96,3 +99,29 @@ def compute_casscf_energy(geometry_path: str,
 
   _, e_tot, _, _, _, _, _, _, _ = casscf.kernel(mo)
   return e_tot
+
+def compute_cas_orb_energies_from_mo(
+  geometry_path: str, 
+  basis: str, 
+  predicted_mos: np.ndarray
+) -> np.ndarray:
+  molecule = gto.M(atom=geometry_path,
+                   basis=basis,
+                   spin=0,
+                   symmetry=True)
+  molecule.verbose = 0
+
+  hartree_fock = molecule.RHF()
+  hartree_fock.kernel()
+
+  n_states = N_STATES
+  weights = np.ones(n_states) / n_states
+  casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
+  casscf.conv_tol = 1e-8
+
+  mo = mcscf.project_init_guess(casscf, hartree_fock.mo_coeff)
+  mo = casscf.sort_mo([19, 20, 21, 22, 23, 24], mo)
+  out = casscf.kernel(mo)
+
+  _, _, mo_energy = casscf.canonicalize(predicted_mos)
+  return mo_energy

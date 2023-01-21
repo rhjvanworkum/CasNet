@@ -11,13 +11,13 @@ split_name=fulvene_normal_1000.npz
 mode=phisnet
 basis=cc-pVDZ
 
-model=fulvene_s005_200_vdz_phisnet_2
-python evaluation/pyscf/evaluate_orbital_guesses_energies.py --geometry_folder $test_geometry_folder --split_name $split_name --mode $mode --model $model --basis $basis --all true
+# model=fulvene_s005_200_vdz_phisnet_2
+# python evaluation/pyscf/evaluate_orbital_guesses_energies.py --geometry_folder $test_geometry_folder --split_name $split_name --mode $mode --model $model --basis $basis --all true
 
-model=fulvene_s005_1000_vdz_phisnet
-python evaluation/pyscf/evaluate_orbital_guesses_energies.py --geometry_folder $test_geometry_folder --split_name $split_name --mode $mode --model $model --basis $basis --all true
+# model=s005_vdz/fulvene_s005_1000_vdz_phisnet
+# python evaluation/pyscf/evaluate_orbital_guesses_energies.py --geometry_folder $test_geometry_folder --split_name $split_name --mode $mode --model $model --basis $basis --all true
 
-model=fulvene_s005_5000_vdz_phisnet
+model=s005_vdz/fulvene_s005_5000_vdz_phisnet
 python evaluation/pyscf/evaluate_orbital_guesses_energies.py --geometry_folder $test_geometry_folder --split_name $split_name --mode $mode --model $model --basis $basis --all true
 
 # mode=ao-min
