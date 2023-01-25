@@ -1,15 +1,8 @@
-# caschnet
-make changes to pyscf & re-compile
-(orbitalMixer: https://acdc.alcf.anl.gov/mdf/detail/orbital_mixer_v1.1/)
+# CasNet
+A repository used to perform experiments for the work on CasNet.
 
 ### 1. Installation & Setup
-build pyscf from scratch:
-- sudo apt-get install libblas-dev liblapack-dev
 
-!! note pyscf in this folder is not used, one in site-packages is used
-
-<br>
-<br>
 
 ### 2. Performing CASSCF calculations in PySCF
 ##### 2.1 Run calculations
@@ -33,17 +26,3 @@ build pyscf from scratch:
 ##### 3.3 Evaluate orbital convergence on validation/test set
 - `python evaluation/evaluate_orbital_guesses_convergence.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`
 - `python evaluation/evaluate_orbital_guesses_energies.py  --geometry_folder geometries/geom_scan_200/ --split_name geom_scan_200.npz --mo_model gs200_sto_6g_MO --F_model gs200_sto_6g_F --basis sto_6g`
-
-
-necessary packages:
-- schnetpack
-- apsw
-- pyscf
-- sympy
-- matscipy
-- dirsync
-- fasteners
-- torch_ema
-- hydra
-- wandb
-- pytorch_lightning
