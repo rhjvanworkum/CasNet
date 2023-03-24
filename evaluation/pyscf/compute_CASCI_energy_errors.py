@@ -49,7 +49,3 @@ if __name__ == "__main__":
 
   method = initial_guess_dict[mode]
   print_casci_energies_errors(geometry_files, method, model_path, basis)
-  # print('Calculating orbital energy differences.....\n')
-  # mo_e_errors, method_name = plot_mo_energies_errors(geometry_files, mode, None, basis)
-  # plt.plot(np.arange(len(mo_e_errors)), mo_e_errors, label=method_name)
-  # plt.show()

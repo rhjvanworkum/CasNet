@@ -12,6 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data.utils import find_all_files_in_output_folder
+from data.db.save_casscf_calculations_to_db import phase_correct_orbitals
+
 
 def plot_matrix_elements(db_path: str, property_name: str):
     matrices = []
@@ -19,8 +21,8 @@ def plot_matrix_elements(db_path: str, property_name: str):
     n = 36
     with connect(db_path) as conn:
         for i in range(250):
-            F = conn.get(i + 1).data[property_name].reshape(n, n).copy()
-            matrices.append(F)
+            prop = conn.get(i + 1).data[property_name].reshape(n, n).copy()
+            matrices.append(prop)
         matrices = np.array(matrices)
 
     fig, axs = plt.subplots(6, 6)
@@ -29,11 +31,33 @@ def plot_matrix_elements(db_path: str, property_name: str):
         for j in range(6):
             axs[i, j].plot(matrices[:, 0, i * 6 + j])
             axs[i, j].axis('off')
+    
+    # add a global x-axis to the bottom of the figure
+    global_x = fig.add_subplot(212, frameon=False)
+    global_x.annotate(
+      '', 
+      xy=(1, 0), 
+      xytext=(0.0, 0), 
+      xycoords='axes fraction', 
+      textcoords='axes fraction', 
+      arrowprops=dict(arrowstyle='->')
+    )
+    global_x.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    global_x.set_xlabel('Geometry scan index')
 
-    plt.title(f'{property_name} matrix elements over geom scan')
+    global_y = fig.add_subplot(221, frameon=False)
+    global_y.annotate(
+      '', 
+      xy=(0, 1.1), 
+      xytext=(0, -1.2),
+      xycoords='axes fraction', 
+      textcoords='axes fraction', 
+      arrowprops=dict(arrowstyle='->')
+    )
+    global_y.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+    global_y.set_ylabel('Coefficient')
 
-    fig.savefig(f'./results/{property_name}_matrix_elements.png')
-    plt.clf()
+    plt.show()
 
 def plot_averaged_casscf_energy(output_folder: str) -> None:
   figure_name = output_folder.split('/')[-2] + '_average_casscf_energy.png'
@@ -55,16 +79,9 @@ def plot_averaged_casscf_energy(output_folder: str) -> None:
 
 
 if __name__ == "__main__":
-  base_dir = os.environ['base_dir']
-
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--db_name', type=str)
-  parser.add_argument('--output_folder', type=str)
-  args = parser.parse_args()
-
-  db_path = "./data_storage/" + args.db_name
+  db_path = "./data_storage/fulvene_geom_scan_250.db"
   plot_matrix_elements(db_path, "F")
   plot_matrix_elements(db_path, "mo_coeffs")
   plot_matrix_elements(db_path, "mo_coeffs_adjusted")
-  output_folder = base_dir + args.output_folder
-  plot_averaged_casscf_energy(output_folder)
+
+#   plot_averaged_casscf_energy(output_folder)

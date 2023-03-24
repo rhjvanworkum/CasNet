@@ -70,7 +70,6 @@ def train_model(
           save_last=True,
           dirpath="checkpoints",
           filename="{epoch:02d}",
-          # inference_path=save_path,
           model_path=save_path
       ),
       pytorch_lightning.callbacks.LearningRateMonitor(

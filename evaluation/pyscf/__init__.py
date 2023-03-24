@@ -173,5 +173,6 @@ initial_guess_dict = {
   'casscf': compute_casscf_orbitals,
   'ML-MO': compute_mo_model_orbitals,
   'ML-F': compute_F_model_orbitals,
-  'phisnet': compute_phisnet_model_orbitals
+  'phisnet': compute_phisnet_model_orbitals,
+  'PhiSNet': compute_phisnet_model_orbitals
 }

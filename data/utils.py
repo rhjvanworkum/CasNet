@@ -3,6 +3,9 @@ import numpy as np
 import os
 from tqdm import tqdm
 
+from pyscf import gto
+from pyscf.tools import molden
+
 """
 
 Utils for saving CASSCF calculation results
@@ -155,3 +158,21 @@ def read_xyz_file(filename):
       atoms.append(Atom(data[0], float(data[1]), float(data[2]), float(data[3])))
 
   return atoms
+
+
+def write_orbitals_to_molden(
+  molden_file: str, 
+  geometry_file: str,
+  basis: str,
+  orbitals: np.ndarray, 
+  energies: np.ndarray
+) -> None:
+
+  molecule = gto.M(atom=geometry_file,
+                   basis=basis,
+                   spin=0,
+                   symmetry=True)
+
+  with open(molden_file, 'w') as f:
+      molden.header(molecule, f)
+      molden.orbital_coeff(molecule, f, orbitals, ene=energies)
