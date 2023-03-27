@@ -134,11 +134,11 @@ if __name__ == "__main__":
   phisnet_model = './checkpoints/' + args.phisnet_model + '.pt'
 
 
-#   train_loss, val_loss, test_loss = evaluate_mo_model_loss(mo_model, db_name, split_file)
-#   print(f'MO model loss (train,val,test): {train_loss}, {val_loss}, {test_loss}')
+  train_loss, val_loss, test_loss = evaluate_mo_model_loss(mo_model, db_name, split_file)
+  print(f'MO model loss (train,val,test): {train_loss}, {val_loss}, {test_loss}')
   
-#   train_loss, val_loss, test_loss = evaluate_f_model_loss(f_model, db_name, split_file)
-#   print(f'F model loss (train,val,test): {train_loss}, {val_loss}, {test_loss}')
+  train_loss, val_loss, test_loss = evaluate_f_model_loss(f_model, db_name, split_file)
+  print(f'F model loss (train,val,test): {train_loss}, {val_loss}, {test_loss}')
   
   train_loss, val_loss, test_loss = evaluate_phisnet_model_loss(phisnet_model, db_name, split_file)
   print(f'phisnet model loss (train,val,test): {train_loss}, {val_loss}, {test_loss}')

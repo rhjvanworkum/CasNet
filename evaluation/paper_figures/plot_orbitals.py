@@ -109,9 +109,6 @@ def plot_orbital(
 if __name__ == "__main__":
   geometry_path = os.environ['base_dir'] + "geometries/fulvene_md_traj_25/geometry_13.xyz"
 
-  # mo_model = f'./checkpoints/geom_scan_250/fulvene_gs250_MO.pt'
-  # f_model = f'./checkpoints/geom_scan_250/fulvene_gs250_F.pt'
-  # phisnet_model = f'./checkpoints/geom_scan_250/fulvene_gs250_phisnet.pt'
   mo_model = f'./checkpoints/md_traj/fulvene_mdtraj_MO.pt'
   f_model = f'./checkpoints/md_traj/fulvene_mdtraj_F.pt'
   phisnet_model = f'./checkpoints/md_traj/fulvene_mdtraj_phisnet.pt'
