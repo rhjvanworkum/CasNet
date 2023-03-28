@@ -3,14 +3,17 @@ A repository used to perform experiments for the work on CasNet.
 
 ### 1. Installation & Setup
 type in command line:
-- git clone 'this github link'
+- git clone git@github.com:rhjvanworkum/CasNet.git
 - git submodule init
 - git submodule update
 - conda env create -f environment.yml
 - conda activate casnet
+- cd pyscf
+- pip install -e . (this might take a while)
 - source env.sh (after setting variables in env.sh file)
 
-This should set up the whole environment (Watch out: a custom version of PySCF is used for this repo that returns macro, micro & inner iterations of the CASSCF object)
+This should set up the whole environment 
+(Watch out: We're our own fork a of PySCF that returns macro, micro & inner iterations of the CASSCF object)
 
 <br>
 <br>
