@@ -1,7 +1,10 @@
+"""Matrix loss functions for orbital / Fock-matrix prediction."""
+
 import torch
 
 
 def mean_squared_error(pred, targets, basis_set_size):
+    """Mean squared error between predicted and target flattened matrices."""
     pred = pred.reshape(-1, basis_set_size, basis_set_size)
     targets = targets.reshape(-1, basis_set_size, basis_set_size)
     batch_size = pred.shape[0]
@@ -14,6 +17,10 @@ def mean_squared_error(pred, targets, basis_set_size):
 
 
 def symm_matrix_mse(pred, targets, basis_set_size):
+    """MSE that first symmetrizes the prediction (``0.5 * (H + Hᵀ)``).
+
+    Appropriate for Fock/Hamiltonian targets, which are symmetric.
+    """
     pred = pred.reshape(-1, basis_set_size, basis_set_size)
     targets = targets.reshape(-1, basis_set_size, basis_set_size)
 
