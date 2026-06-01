@@ -38,6 +38,10 @@ ml = [
     "pytorch-lightning==1.8.3.post0",
     "torchmetrics==0.10.3",
     "torch-ema==0.3",
+    # PyTorch-Lightning 1.8 imports pkg_resources at runtime. Modern interpreters
+    # no longer ship setuptools, and setuptools>=80 dropped pkg_resources, so pin
+    # to the era-appropriate range that still provides it.
+    "setuptools>=65,<70",
 ]
 # Quantum-chemistry backend. NOTE: the iteration-counting evaluation scripts
 # additionally require the custom PySCF fork (see README) whose CASSCF kernel

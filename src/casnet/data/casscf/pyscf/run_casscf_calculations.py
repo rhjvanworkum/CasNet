@@ -4,7 +4,7 @@ import numpy as np
 from pyscf import gto, mcscf
 from tqdm import tqdm
 
-from casnet.config import get_base_dir
+from casnet.config import N_STATES, NCAS, NELECAS, SORT_MO_INDICES, get_base_dir
 from casnet.data.casscf import EQUILIBRIUM_GEOMETRY_PATH
 from casnet.data.utils import (
     CasscfResult,
@@ -23,15 +23,15 @@ def run_fulvene_casscf_calculation(
     hartree_fock.kernel()
     S = hartree_fock.get_ovlp(molecule)
 
-    n_states = 3
+    n_states = N_STATES
     weights = np.ones(n_states) / n_states
-    casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
+    casscf = hartree_fock.CASSCF(ncas=NCAS, nelecas=NELECAS).state_average(weights)
 
     if guess_mos is not None:
         mo = mcscf.project_init_guess(casscf, guess_mos)
     else:
         mo = mcscf.project_init_guess(casscf, hartree_fock.mo_coeff)
-    mo = casscf.sort_mo([19, 20, 21, 22, 23, 24], mo)
+    mo = casscf.sort_mo(SORT_MO_INDICES, mo)
 
     conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeffs, mo_energies = casscf.kernel(mo)
 

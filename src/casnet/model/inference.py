@@ -2,7 +2,6 @@ import numpy as np
 import schnetpack as spk
 import torch
 from ase import io
-from phisnet_fork.utils.transform_hamiltonians import transform_hamiltonians_from_lm_to_ao
 
 from casnet.data.utils import read_xyz_file
 
@@ -10,6 +9,10 @@ from casnet.data.utils import read_xyz_file
 def infer_orbitals_from_phisnet_model(
     model_path: str, geometry_path: str, orbital_convention: str = "fulvene_minimal_basis"
 ) -> np.ndarray:
+    # Imported lazily: only the PhisNet path needs the phisnet_fork submodule, so
+    # the F-model / MO-model inference functions remain usable without it.
+    from phisnet_fork.utils.transform_hamiltonians import transform_hamiltonians_from_lm_to_ao
+
     use_gpu = torch.cuda.is_available()
     if use_gpu:
         device = torch.device("cuda")

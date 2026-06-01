@@ -4,7 +4,7 @@ import numpy as np
 import scipy.linalg
 from pyscf import gto, mcscf, scf
 
-from casnet.config import get_base_dir
+from casnet.config import N_STATES, NCAS, NELECAS, SORT_MO_INDICES, get_base_dir
 from casnet.evaluation import compute_cas_orb_energies_from_mo
 from casnet.model.inference import (
     infer_orbitals_from_F_model,
@@ -112,12 +112,12 @@ def compute_casscf_orbitals(
     hartree_fock = molecule.RHF()
     hartree_fock.kernel()
 
-    n_states = 3
+    n_states = N_STATES
     weights = np.ones(n_states) / n_states
-    casscf = hartree_fock.CASSCF(ncas=6, nelecas=6).state_average(weights)
+    casscf = hartree_fock.CASSCF(ncas=NCAS, nelecas=NELECAS).state_average(weights)
 
     mo = mcscf.project_init_guess(casscf, hartree_fock.mo_coeff)
-    mo = casscf.sort_mo([19, 20, 21, 22, 23, 24], mo)
+    mo = casscf.sort_mo(SORT_MO_INDICES, mo)
 
     conv, e_tot, imacro, imicro, iinner, e_cas, ci, mo_coeff, mo_e = casscf.kernel(mo)
     return mo_e, mo_coeff
