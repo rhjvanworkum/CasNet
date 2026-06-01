@@ -1,0 +1,110 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "casnet"
+version = "0.1.0"
+description = "Neural-network orbital guesses for accelerating CASSCF convergence"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Ruard van Workum" }]
+keywords = ["quantum-chemistry", "casscf", "machine-learning", "schnetpack", "pyscf"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+
+# Lightweight core: only what the pure-Python data/geometry utilities need.
+# The heavy ML / quantum-chemistry / visualisation stacks are opt-in extras so
+# that `uv sync` and CI stay fast.
+dependencies = [
+    "numpy>=1.24,<2",
+    "scipy>=1.9",
+    "ase>=3.22",
+    "h5py>=3.7",
+    "tqdm>=4.64",
+]
+
+[project.optional-dependencies]
+# Training + inference. Pinned to the original (Python 3.10) era to preserve
+# numerical behaviour; these versions require Python 3.10 (torch 1.13).
+ml = [
+    "torch==1.13.0",
+    "schnetpack==2.0.0",
+    "pytorch-lightning==1.8.3.post0",
+    "torchmetrics==0.10.3",
+    "torch-ema==0.3",
+]
+# Quantum-chemistry backend. NOTE: the iteration-counting evaluation scripts
+# additionally require the custom PySCF fork (see README) whose CASSCF kernel
+# returns macro/micro/inner iteration counts; stock PySCF satisfies imports only.
+qc = ["pyscf==2.1.1"]
+# Figure plotting. NOTE: the 3D orbital renderer (plot_orbitals.py) additionally
+# needs mayavi + vtk + PyQt5, which are awkward to build via the resolver; install
+# them manually if needed: `uv pip install mayavi vtk PyQt5`.
+viz = ["matplotlib>=3.6"]
+# Experiment tracking.
+wandb = ["wandb>=0.13"]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.2",
+    "pytest-cov>=4.0",
+    "ruff>=0.6",
+    "mypy>=1.8",
+]
+
+[project.scripts]
+casnet-train = "casnet.cli:train"
+casnet-generate-split = "casnet.data.splits.generate:main"
+casnet-geom-scan = "casnet.data.geometries.generate_geom_scan:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/casnet"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# The quantum-chemistry / ML modules retain the original 2-space indentation and
+# some intentional patterns; keep the lint surface focused while we modernise.
+ignore = ["E741"]  # ambiguous names (S, F) are standard QC notation here
+
+# The quantum-chemistry / figure modules are documented external-prerequisite code
+# that cannot be executed in CI; they are held to a lighter standard pending a
+# deeper (separately verifiable) refactor. The modernised pure-Python core
+# (config, data.utils, splits, geometry generation, model, cli) is linted strictly.
+[tool.ruff.lint.per-file-ignores]
+"src/casnet/evaluation/**" = ["E501", "B905", "F841"]
+"src/casnet/data/casscf/openmolcas/**" = ["B007"]
+"src/casnet/data/db/utils.py" = ["B006", "B007"]
+"src/casnet/data/geometries/generate_normal_distribution.py" = ["B007"]
+
+[tool.mypy]
+python_version = "3.10"
+# Start lenient; tighten over time. Type-checking currently covers the pure-Python
+# core, which runs without the heavy ML/QC stack so it can be checked in fast CI.
+# The torch/schnetpack/pyscf modules will be brought under mypy as those
+# environments are added to the type-check job.
+ignore_missing_imports = true
+follow_imports = "silent"
+warn_unused_ignores = false
+disallow_untyped_defs = false
+files = [
+    "src/casnet/__init__.py",
+    "src/casnet/config.py",
+    "src/casnet/data/utils.py",
+    "src/casnet/data/splits/generate.py",
+    "src/casnet/data/geometries/generate_geom_scan.py",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
